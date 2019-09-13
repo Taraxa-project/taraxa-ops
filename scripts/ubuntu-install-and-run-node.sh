@@ -88,7 +88,7 @@ git clone https://github.com/vkobel/ethereum-generate-wallet.git /opt/ethereum-g
 cd /opt/ethereum-generate-wallet
 ./ethereum-wallet-generator.sh > generated-account.txt
 
-TARAXA_NODE_NODE_SECRET=$(grep Private $HOME/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
+TARAXA_NODE_NODE_SECRET=$(grep Private /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
 
 #Generate config
 sudo mkdir -p ${TARAXA_NODE_PATH}
