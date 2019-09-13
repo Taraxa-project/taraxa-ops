@@ -17,7 +17,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "network_address": "0.0.0.0",
   "network_listen_port": 10002,
   "network_simulated_delay": 0,
-  "network_transaction_interval": 0,
+  "network_transaction_interval": 250,
   "network_bandwidth": 160,
   "network_boot_nodes": [
     {
@@ -37,7 +37,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
       1500
     ],
     "pbft": [
-      1000,
+      5000,
       20,
       10000,
       100,
@@ -84,8 +84,8 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io git
 
 # Gnerate account
-git clone https://github.com/vkobel/ethereum-generate-wallet.git $HOME/ethereum-generate-wallet/
-cd $HOME/ethereum-generate-wallet
+git clone https://github.com/vkobel/ethereum-generate-wallet.git /opt/ethereum-generate-wallet/
+cd /opt/ethereum-generate-wallet
 ./ethereum-wallet-generator.sh > generated-account.txt
 
 TARAXA_NODE_NODE_SECRET=$(grep Private $HOME/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
@@ -104,4 +104,5 @@ sudo docker run -d --name taraxa-node \
 	-p 7777:7777 \
 	-p 8777:8777 \
 	-p 10002:10002/udp \
-	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR VOTE_MGR --conf_taraxa /config/conf_taraxa.json
+    --restart always \
+	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR VOTE_MGR FULLND --conf_taraxa /config/conf_taraxa.json
