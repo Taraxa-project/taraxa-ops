@@ -12,7 +12,7 @@ mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
 
 # Get doctl (we want it to always overwrite it)
-curl -sL https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar -xzv
+curl -fsSL https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar -xzv
 
 # Verify doctl permissions
 $DOCTL_PATH account get
@@ -27,7 +27,7 @@ if [ "$RETURN" != 0 ]; then
 fi
 
 # Get current bootstrap script
-curl -sL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${DROPLET_USERDATA_SCRIPT}
+curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${DROPLET_USERDATA_SCRIPT}
 
 # Get random Zone
 REGIONS=($($DOCTL_PATH compute region list | grep true | awk '{ print $1}'))
