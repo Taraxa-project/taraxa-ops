@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/sc
 REGIONS=($($DOCTL_PATH compute region list | grep true | awk '{ print $1}'))
 DROPLET_REGION=${REGIONS[$RANDOM % ${#REGIONS[@]}]}
 
-RND_STR=$(head /dev/urandom | tr -dc a-z0-9 | head -c 4 ; echo '')
+RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
 
 # Create Droplet
