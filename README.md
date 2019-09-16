@@ -2,11 +2,21 @@
 Taraxa node operation master repository
 
 # Runing Taraxa-node at Digital Ocean
-You only need an Digital Ocean account to be able to run a Taraxa-node against the testnet.
+You only need a Digital Ocean account to be able to run a Taraxa-node against the testnet.
 Follow this instructions to get a Digital Ocean account https://www.digitalocean.com/docs/getting-started/sign-up/
 
 ## One Click Install
-#TODO
+You need a Digital Ocean API token to use One Click Install.
+Follow [here](https://www.digitalocean.com/docs/api/create-personal-access-token/) to get it.
+
+You may export your token as the env var `DIGITALOCEAN_ACCESS_TOKEN` or insert it when script ask for it.
+
+To have your Taraxa-node Runing just run:
+```
+$ curl -sL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-DO.sh | bash
+```
+
+Each time you run the script, a new droplet will be launched at Digital Ocean.
 
 ## Running it manually
 Now lets create our `taraxa-node` droplet.
