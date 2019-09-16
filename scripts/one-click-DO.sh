@@ -12,7 +12,8 @@ mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
 
 # Get doctl (we want it to always overwrite it)
-curl -fsSL https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-linux-amd64.tar.gz | tar -xzv
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+curl -fsSL https://github.com/digitalocean/doctl/releases/download/v${DOCTL_VERSION}/doctl-${DOCTL_VERSION}-${OS}-amd64.tar.gz | tar -xzv
 
 # Verify doctl permissions
 $DOCTL_PATH account get
