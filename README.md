@@ -13,7 +13,7 @@ You may export your token as the env var `DIGITALOCEAN_ACCESS_TOKEN` or insert i
 
 To have your Taraxa-node Runing just run:
 ```
-$ curl -sL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-DO.sh | bash
+$ bash -c "$(wget -O -  https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-DO.sh)"
 ```
 
 Each time you run the script, a new droplet will be launched at Digital Ocean.
