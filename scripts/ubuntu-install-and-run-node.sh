@@ -8,6 +8,8 @@ TARAXA_NODE_BOOT_NODE_ADDRESS=35.238.156.27
 TARAXA_NODE_CONF_PATH=${TARAXA_NODE_PATH}/conf_taraxa.json
 TARAXA_NODE_DB_PATH=${TARAXA_NODE_PATH}/taraxadb
 TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa-node:latest
+TARAXA_FAUCET_ADDRESS=${TARAXA_NODE_BOOT_NODE_ADDRESS}
+TARAXA_FAUCET_PORT=5000
 
 TARAXA_NODE_CONF=$(cat <<EOF
 {
@@ -17,7 +19,9 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "network_address": "0.0.0.0",
   "network_listen_port": 10002,
   "network_simulated_delay": 0,
-  "network_transaction_interval": 250,
+  "network_transaction_interval": 800,
+  "network_encrypted" : 0,
+  "network_performance_log" : 1,
   "network_bandwidth": 160,
   "network_boot_nodes": [
     {
@@ -37,10 +41,10 @@ TARAXA_NODE_CONF=$(cat <<EOF
       1500
     ],
     "pbft": [
-      5000,
+      10000,
       20,
       10000,
-      100,
+      1000000,
       1
     ]
   },
@@ -106,3 +110,7 @@ sudo docker run -d --name taraxa-node \
 	-p 10002:10002/udp \
     --restart always \
 	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR VOTE_MGR FULLND --conf_taraxa /config/conf_taraxa.json
+
+# Ask for coins
+MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
+curl -d '{"address": '"${MY_ADDRESS}"'}' -H "Content-Type: application/json" -X POST http://${TARAXA_FAUCET_ADDRESS}:${TARAXA_FAUCET_PORT}/nodes/new
