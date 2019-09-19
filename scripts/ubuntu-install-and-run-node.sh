@@ -113,4 +113,4 @@ sudo docker run -d --name taraxa-node \
 
 # Ask for coins
 MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
-curl -d '{"address": '"${MY_ADDRESS}"'}' -H "Content-Type: application/json" -X POST http://${TARAXA_FAUCET_ADDRESS}:${TARAXA_FAUCET_PORT}/nodes/new
+curl -d '{"address": "'${MY_ADDRESS}'"}' -H "Content-Type: application/json" -X POST http://${TARAXA_FAUCET_ADDRESS}:${TARAXA_FAUCET_PORT}/nodes/new
