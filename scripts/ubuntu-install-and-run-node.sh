@@ -19,9 +19,11 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "network_address": "0.0.0.0",
   "network_listen_port": 10002,
   "network_simulated_delay": 0,
-  "network_transaction_interval": 800,
+  "network_transaction_interval": 500,
   "network_encrypted" : 0,
   "network_performance_log" : 1,
+  "network_ideal_peer_count" : 10,
+  "network_max_peer_count" : 15,
   "network_bandwidth": 160,
   "network_boot_nodes": [
     {
@@ -37,8 +39,8 @@ TARAXA_NODE_CONF=$(cat <<EOF
     "block_proposer": [
       0,
       1,
-      1000,
-      1500
+      2000,
+      2500
     ],
     "pbft": [
       10000,
@@ -99,6 +101,9 @@ sudo mkdir -p ${TARAXA_NODE_PATH}
 echo ${TARAXA_NODE_CONF} | sudo tee ${TARAXA_NODE_CONF_PATH}
 sudo sed -i s/TARAXA_NODE_BOOT_NODE_ADDRESS/${TARAXA_NODE_BOOT_NODE_ADDRESS}/g $TARAXA_NODE_CONF_PATH
 sudo sed -i s/TARAXA_NODE_NODE_SECRET/${TARAXA_NODE_NODE_SECRET}/g $TARAXA_NODE_CONF_PATH
+
+# Pull Taraxa-Node
+sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
 # Run Taraxa-Node
 sudo docker run -d --name taraxa-node \
