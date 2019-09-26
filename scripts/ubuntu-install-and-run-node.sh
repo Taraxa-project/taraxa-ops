@@ -126,3 +126,6 @@ curl -d '{"address": "'${MY_ADDRESS}'"}' -H "Content-Type: application/json" -X 
 
 # Add Transaction to self
 RECV_ADDRESS=${MY_ADDRESS} python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
+
+# Add scripts folder to PATH for root user
+echo 'export PATH=$PATH:/opt/taraxa-ops/scritps' >> /root/.profile
