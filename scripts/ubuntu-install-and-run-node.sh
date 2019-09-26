@@ -46,7 +46,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
     "pbft": [
       10000,
       20,
-      10000,
+      100000,
       1000000,
       1
     ]
@@ -88,7 +88,7 @@ sudo add-apt-repository \
 	$(lsb_release -cs) \
 	stable"
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io git
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 
 # Generate account
 git clone https://github.com/vkobel/ethereum-generate-wallet.git /opt/ethereum-generate-wallet/
