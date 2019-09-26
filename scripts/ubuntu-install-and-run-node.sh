@@ -13,6 +13,7 @@ TARAXA_FAUCET_PORT=5000
 
 TARAXA_NODE_CONF=$(cat <<EOF
 {
+  "use_basic_executor": 1,
   "node_secret": "TARAXA_NODE_NODE_SECRET",
   "db_path": "/taraxadb",
   "dag_processing_threads": 1,
