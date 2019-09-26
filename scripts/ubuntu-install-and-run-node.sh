@@ -73,7 +73,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
 EOF
 )
 
-# Install docker
+# Install docker and tools
 sudo apt-get remove -y docker docker-engine docker.io containerd runc
 sudo apt-get update
 sudo apt-get install -y \
@@ -90,12 +90,15 @@ sudo add-apt-repository \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io git
 
-# Gnerate account
+# Generate account
 git clone https://github.com/vkobel/ethereum-generate-wallet.git /opt/ethereum-generate-wallet/
 cd /opt/ethereum-generate-wallet
 ./ethereum-wallet-generator.sh > generated-account.txt
 
 TARAXA_NODE_NODE_SECRET=$(grep Private /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
+
+# Get taraxa-ops repo
+git clone https://github.com/Taraxa-project/taraxa-ops.git /opt/taraxa-ops/
 
 #Generate config
 sudo mkdir -p ${TARAXA_NODE_PATH}
@@ -120,3 +123,6 @@ sudo docker run -d --name taraxa-node \
 # Ask for coins
 MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
 curl -d '{"address": "'${MY_ADDRESS}'"}' -H "Content-Type: application/json" -X POST http://${TARAXA_FAUCET_ADDRESS}:${TARAXA_FAUCET_PORT}/nodes/new
+
+# Add Transaction to self
+RECV_ADDRESS=${MY_ADDRESS} python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
