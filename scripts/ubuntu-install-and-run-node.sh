@@ -46,7 +46,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
     "pbft": [
       10000,
       20,
-      50000,
+      10000,
       500,
       0
     ]
