@@ -10,6 +10,8 @@ TARAXA_NODE_DB_PATH=${TARAXA_NODE_PATH}/taraxadb
 TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa-node:latest
 TARAXA_FAUCET_ADDRESS=${TARAXA_NODE_BOOT_NODE_ADDRESS}
 TARAXA_FAUCET_PORT=5000
+TARAXA_LOCAL_RPC_PORT=7777
+TARAXA_LOCAL_NODE_ADDRESS=localhost
 
 TARAXA_NODE_CONF=$(cat <<EOF
 {
@@ -125,8 +127,14 @@ sudo docker run -d --name taraxa-node \
 MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
 curl -d '{"address": "'${MY_ADDRESS}'"}' -H "Content-Type: application/json" -X POST http://${TARAXA_FAUCET_ADDRESS}:${TARAXA_FAUCET_PORT}/nodes/new
 
+# Wait if port isn't ready
+nc -z localhost ${TARAXA_LOCAL_RPC_PORT} || sleep 10
+
 # Add Transaction to self
-RECV_ADDRESS=${MY_ADDRESS} python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
+export RECV_ADDRESS=${MY_ADDRESS}
+export RPC_PORT=${TARAXA_LOCAL_RPC_PORT}
+export NODE=${TARAXA_LOCAL_NODE_ADDRESS}
+python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
 
 # Add scripts folder to PATH for root user
 echo 'export PATH=$PATH:/opt/taraxa-ops/scripts' >> /root/.profile
