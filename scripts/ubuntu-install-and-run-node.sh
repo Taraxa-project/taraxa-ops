@@ -20,7 +20,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "network_address": "0.0.0.0",
   "network_listen_port": 10002,
   "network_simulated_delay": 0,
-  "network_transaction_interval": 500,
+  "network_transaction_interval": 3200,
   "network_encrypted" : 0,
   "network_performance_log" : 1,
   "network_ideal_peer_count" : 10,
@@ -40,15 +40,16 @@ TARAXA_NODE_CONF=$(cat <<EOF
     "block_proposer": [
       0,
       1,
-      2000,
-      2500
+      4000,
+      4500
     ],
     "pbft": [
       10000,
       20,
       100000,
-      1000000,
-      1
+      500,
+      0,
+      0
     ]
   },
   "genesis_state": {
