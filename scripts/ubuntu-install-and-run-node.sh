@@ -15,7 +15,7 @@ TARAXA_LOCAL_NODE_ADDRESS=localhost
 
 TARAXA_NODE_CONF=$(cat <<EOF
 {
-  "use_basic_executor": 1,
+  "use_basic_executor": 0,
   "node_secret": "TARAXA_NODE_NODE_SECRET",
   "db_path": "/taraxadb",
   "dag_processing_threads": 1,
