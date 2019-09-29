@@ -12,7 +12,7 @@ else
     NONCE=0
 fi
 
-echo "Enter the amout you want to send:"
+echo "Enter the amount you want to send:"
 read VALUE
 
 echo "Enter the destination Address:"
