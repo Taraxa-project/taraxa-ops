@@ -1,7 +1,8 @@
+# Taraxa Node Running Guide for Albidum
+Taraxa node operation master repository
+
 ![Image of Taraxa Albidum](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/taraxa_albidum.png)
 
-# taraxa-ops
-Taraxa node operation master repository
 
 # Runing Taraxa-node at Digital Ocean
 You only need a Digital Ocean account to be able to run a Taraxa-node against the testnet.
