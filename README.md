@@ -1,3 +1,5 @@
+![Image of Taraxa Albidum](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/taraxa_albidum.png)
+
 # taraxa-ops
 Taraxa node operation master repository
 
