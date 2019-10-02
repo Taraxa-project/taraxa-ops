@@ -19,6 +19,8 @@ DATA=$(cat <<EOF
 EOF
 )
 
-RESULT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT})
+RESULT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT}  |  jq .result.value)
 
-echo ${RESULT} | jq .result.value
+BALANCE=$(sed -e 's/^"//' -e 's/"$//' <<< "${RESULT}")
+
+echo ${BALANCE}

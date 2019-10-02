@@ -1,0 +1,30 @@
+#!/bin/bash
+
+RPC_ADDRESS=localhost
+RPC_PORT=7777
+MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
+
+BALANCE=$(taraxa-check-balance)
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id":0,
+  "method": "get_executed_trx_count",
+  "params": [
+    {
+    }
+  ]
+}
+EOF
+)
+
+EXECUTEDTRXCOUNT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT} | jq .result.value)
+
+
+echo "Account Address:"
+echo ${MY_ADDRESS}
+echo "Account balance:"
+echo ${BALANCE}
+echo "Executed transaction count:"
+echo ${EXECUTEDTRXCOUNT}
