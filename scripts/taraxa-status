@@ -6,6 +6,10 @@ MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | 
 
 BALANCE=$(taraxa-check-balance)
 
+NODECOUNT=$(taraxa-node-count)
+
+PEERCOUNT=$(taraxa-peer-count)
+
 DATA=$(cat <<EOF
 {
   "jsonrpc": "2.0",
@@ -46,3 +50,7 @@ echo "Executed transaction count:"
 echo ${EXECUTEDTRXCOUNT}
 echo "Dag size:"
 echo ${DAGSIZE}
+echo "Node count:"
+echo ${NODECOUNT}
+echo "Connected peers:"
+echo ${PEERCOUNT}

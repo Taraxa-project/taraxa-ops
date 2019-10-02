@@ -1,0 +1,23 @@
+#!/bin/bash
+
+RPC_ADDRESS=localhost
+RPC_PORT=7777
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id":0,
+  "method": "get_peer_count",
+  "params": [
+    {
+    }
+  ]
+}
+EOF
+)
+
+RESULT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT}  |  jq .result.value)
+
+PEERCOUNT=$(sed -e 's/^"//' -e 's/"$//' <<< "${RESULT}")
+
+echo ${PEERCOUNT}
