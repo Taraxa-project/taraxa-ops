@@ -28,6 +28,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "network_ideal_peer_count" : 10,
   "network_max_peer_count" : 15,
   "network_bandwidth": 160,
+  "network_sync_level_size": 1,
   "network_boot_nodes": [
     {
       "id": "7b1fcf0ec1078320117b96e9e9ad9032c06d030cf4024a598347a4623a14a421d4f030cf25ef368ab394a45e920e14b57a259a09c41767dd50d1da27b627412a",
