@@ -71,6 +71,6 @@ $ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-
 ```
 or if you already have an ssh key to use with your Taraxa-node, run the command and pass in the name of your ssh key:
 ```
-$ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-DO.sh)" {KEYNAME}
+$ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-AWS.sh)" {KEYNAME}
 ```
 Each time you run the script a new ec2 instance will be created.
