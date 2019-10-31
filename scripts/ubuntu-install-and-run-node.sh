@@ -4,7 +4,7 @@
 # This is initial developed to be used as startup script for cloud virtual machines to help new users to get a node running.
 
 TARAXA_NODE_PATH=/opt/taraxa-node
-TARAXA_NODE_BOOT_NODE_ADDRESS=35.238.156.27
+TARAXA_NODE_BOOT_NODE_ADDRESS=35.193.111.190
 TARAXA_NODE_CONF_PATH=${TARAXA_NODE_PATH}/conf_taraxa.json
 TARAXA_NODE_DB_PATH=${TARAXA_NODE_PATH}/taraxadb
 TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa-node:latest
