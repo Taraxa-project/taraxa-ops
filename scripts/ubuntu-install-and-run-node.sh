@@ -121,7 +121,7 @@ sudo docker run -d --name taraxa-node \
 	-p 8777:8777 \
 	-p 10002:10002/udp \
     --restart always \
-	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR VOTE_MGR FULLND TARCAP net --conf_taraxa /config/conf_taraxa.json
+	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR --conf_taraxa /config/conf_taraxa.json
 
 # Ask for coins
 MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
