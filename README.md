@@ -58,3 +58,19 @@ If you wish to tail the logs, add `-f` to the command above. **Ctrl**-**C** is n
 
 # Interacting with your node and the Network.
 #TODO
+
+# Running Taraxa-node at AWS
+You only need an EC2 instance at AWS in order to run a Taraxa-node. To get started with AWS EC2 see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
+
+## One Click Install
+You need an AWS account with configured credentials. If you'd like the ability to ssh into your EC2 instance you will need to setup an ssh key for use with EC2, follow these [instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair).
+
+To have your Taraxa-node running just run:
+```
+$ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-AWS.sh)"
+```
+or if you already have an ssh key to use with your Taraxa-node, run the command and pass in the name of your ssh key:
+```
+$ bash -c "$(curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/one-click-AWS.sh)" {KEYNAME}
+```
+Each time you run the script a new ec2 instance will be created.
