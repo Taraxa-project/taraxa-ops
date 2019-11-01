@@ -1,7 +1,7 @@
 # Taraxa Node Running Guide for Albidum
 Taraxa node operation master repository
 
-![Image of Taraxa Albidum](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/taraxa_albidum.png)
+![Image of Taraxa Aphrogenes](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/taraxa_aphrogenes.png)
 
 
 # Runing Taraxa-node at Digital Ocean
