@@ -15,20 +15,20 @@ TARAXA_LOCAL_NODE_ADDRESS=localhost
 
 TARAXA_NODE_CONF=$(cat <<EOF
 {
-  "use_basic_executor": 0,
   "node_secret": "TARAXA_NODE_NODE_SECRET",
+  "vrf_secret": "TARAXA_NODE_VRF_SECRET",
   "db_path": "/taraxadb",
-  "dag_processing_threads": 1,
+  "dag_processing_threads": 6,
   "network_address": "0.0.0.0",
   "network_listen_port": 10002,
   "network_simulated_delay": 0,
-  "network_transaction_interval": 3200,
+  "network_transaction_interval": 500,
   "network_encrypted" : 0,
-  "network_performance_log" : 1,
+  "network_performance_log" : 0,
+  "network_bandwidth": 160,
   "network_ideal_peer_count" : 10,
   "network_max_peer_count" : 15,
-  "network_bandwidth": 160,
-  "network_sync_level_size": 2,
+  "network_sync_level_size" : 3,
   "network_boot_nodes": [
     {
       "id": "7b1fcf0ec1078320117b96e9e9ad9032c06d030cf4024a598347a4623a14a421d4f030cf25ef368ab394a45e920e14b57a259a09c41767dd50d1da27b627412a",
@@ -47,30 +47,13 @@ TARAXA_NODE_CONF=$(cat <<EOF
       4500
     ],
     "pbft": [
-      1000,
+      2000,
       20,
       10000,
-      500,
+      5,
+      1,
       0
     ]
-  },
-  "genesis_state": {
-    "account_start_nonce": 0,
-    "block": {
-      "level": 0,
-      "tips": [],
-      "trxs": [],
-      "sig": "b7e22d46c1ba94d5e8347b01d137b5c428fcbbeaf0a77fb024cbbf1517656ff00d04f7f25be608c321b0d7483c402c294ff46c49b265305d046a52236c0a363701",
-      "hash": "c9524784c4bf29e6facdd94ef7d214b9f512cdfd0f68184432dab85d053cbc69",
-      "sender": "de2b1203d72d3549ee2f733b00b2789414c7cea5",
-      "pivot": "0000000000000000000000000000000000000000000000000000000000000000",
-      "timestamp": 1564617600
-    },
-    "accounts": {
-      "de2b1203d72d3549ee2f733b00b2789414c7cea5": {
-        "balance": 9007199254740991
-      }
-    }
   }
 }
 EOF
@@ -99,6 +82,9 @@ cd /opt/ethereum-generate-wallet
 ./ethereum-wallet-generator.sh > generated-account.txt
 
 TARAXA_NODE_NODE_SECRET=$(grep Private /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
+# Temporary hack to generate the VRF key
+sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
+TARAXA_NODE_VRF_SECRET=$(sudo docker run --rm -it --entrypoint "/bin/bash" ${TARAXA_NODE_DOCKER_IMAGE} -c "./crypto_test --gtest_filter=CryptoTest.vrf_proof_verify | grep 'VRF' | awk ' NR==2 {print \$5}'")
 
 # Get taraxa-ops repo
 git clone https://github.com/Taraxa-project/taraxa-ops.git /opt/taraxa-ops/
@@ -108,6 +94,7 @@ sudo mkdir -p ${TARAXA_NODE_PATH}
 echo ${TARAXA_NODE_CONF} | sudo tee ${TARAXA_NODE_CONF_PATH}
 sudo sed -i s/TARAXA_NODE_BOOT_NODE_ADDRESS/${TARAXA_NODE_BOOT_NODE_ADDRESS}/g $TARAXA_NODE_CONF_PATH
 sudo sed -i s/TARAXA_NODE_NODE_SECRET/${TARAXA_NODE_NODE_SECRET}/g $TARAXA_NODE_CONF_PATH
+sudo sed -i s/TARAXA_NODE_VRF_SECRET/${TARAXA_NODE_VRF_SECRET}/g $TARAXA_NODE_CONF_PATH
 
 # Pull Taraxa-Node
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
