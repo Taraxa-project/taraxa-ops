@@ -84,7 +84,7 @@ cd /opt/ethereum-generate-wallet
 TARAXA_NODE_NODE_SECRET=$(grep Private /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
 # Temporary hack to generate the VRF key
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
-TARAXA_NODE_VRF_SECRET=$(sudo docker run --rm -it --entrypoint "/bin/bash" ${TARAXA_NODE_DOCKER_IMAGE} -c "./crypto_test --gtest_filter=CryptoTest.vrf_proof_verify | grep 'VRF' | awk ' NR==2 {print \$5}'")
+TARAXA_NODE_VRF_SECRET=$(sudo docker run --rm --entrypoint "/bin/bash" ${TARAXA_NODE_DOCKER_IMAGE} -c "./crypto_test --gtest_filter=CryptoTest.vrf_proof_verify | grep 'VRF' | awk ' NR==2 {print \$5}'")
 
 # Get taraxa-ops repo
 git clone https://github.com/Taraxa-project/taraxa-ops.git /opt/taraxa-ops/
