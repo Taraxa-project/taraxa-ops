@@ -10,7 +10,7 @@ COINS_TO_SEND = os.getenv('COINS_TO_SEND', '1000000')
 RPC_PORT = os.getenv('RPC_PORT', '7777')
 NODE = os.getenv('NODE', 'localhost')
 NONCE = os.getenv('NONCE', '0')
-TPS_RATE = os.getenv('TPS_RATE', '1')
+TPS_RATE = os.getenv('TPS_RATE', '2')
 
 def rpc(node, data):
     request = None
