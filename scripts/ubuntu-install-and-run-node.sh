@@ -103,7 +103,8 @@ sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 sudo docker run -d --name taraxa-node \
 	-v ${TARAXA_NODE_DB_PATH}:/taraxadb \
 	-v ${TARAXA_NODE_CONF_PATH}:/config/conf_taraxa.json \
-	-p 10002:10002 \
+	-e DEBUG=1 \
+  -p 10002:10002 \
 	-p 7777:7777 \
 	-p 8777:8777 \
 	-p 10002:10002/udp \
