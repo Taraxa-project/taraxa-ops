@@ -52,6 +52,7 @@ TARAXA_NODE_CONF=$(cat <<EOF
       10000,
       100,
       1,
+      10,
       0
     ]
   }
@@ -122,7 +123,8 @@ nc -z localhost ${TARAXA_LOCAL_RPC_PORT} || sleep 10
 export RECV_ADDRESS=${MY_ADDRESS}
 export RPC_PORT=${TARAXA_LOCAL_RPC_PORT}
 export NODE=${TARAXA_LOCAL_NODE_ADDRESS}
-python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
+#python3 /opt/taraxa-ops/scripts/send_coins_to_self.py
+#nohup python3 /opt/taraxa-ops/scripts/send_coins_to_self.py > send_coins_to_self.log &
 
 # Add scripts folder to PATH for root user
 echo 'export PATH=$PATH:/opt/taraxa-ops/scripts' >> /root/.profile
