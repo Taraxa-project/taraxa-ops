@@ -40,12 +40,22 @@ TARAXA_NODE_CONF=$(cat <<EOF
   "rpc_port": 7777,
   "ws_port": 8777,
   "test_params": {
-    "block_proposer": [
-      0,
-      1,
-      4000,
-      4500
-    ],
+    "max_transaction_queue_warn" : 0,
+    "max_transaction_queue_drop" : 0,
+    "max_block_queue_warn" : 0,
+    "block_proposer": {
+      "mode": "random",
+      "shard": 1,
+      "transaction_limit" : 0,
+      "random_params": {
+        "min_freq":"4000",
+        "max_freq":"4500"
+      },
+      "sortition_params": {
+        "difficulty_bound":"100",
+        "lambda_bits":"1000"
+      }
+    },
     "pbft": [
       2000,
       20,
@@ -110,7 +120,7 @@ sudo docker run -d --name taraxa-node \
 	-p 8777:8777 \
 	-p 10002:10002/udp \
     --restart always \
-	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR --conf_taraxa /config/conf_taraxa.json
+	${TARAXA_NODE_DOCKER_IMAGE} --log-verbosity "3" --log-channels PBFT_CHAIN PBFT_MGR PBFTSYNC --conf_taraxa /config/conf_taraxa.json
 
 # Ask for coins
 MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
