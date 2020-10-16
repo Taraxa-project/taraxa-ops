@@ -5,6 +5,7 @@
 
 TARAXA_NODE_PATH=/opt/taraxa-node
 TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa-node:20201013_16h41m19s-8fe3f9fc588e78d45a6a725deffd7e9a23741301
+TARAXA_CLI_DOCKER_IMAGE=taraxa/cli:latest
 
 # Install docker and tools
 sudo apt-get remove -y docker docker-engine docker.io containerd runc
@@ -21,24 +22,26 @@ sudo add-apt-repository \
 	$(lsb_release -cs) \
 	stable"
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq npm
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 
-# Install taraxa-cli
-npm install -g taraxa-cli
+# Pull taraxa/cli
+sudo docker pull ${TARAXA_CLI_DOCKER_IMAGE}
 
 #Generate config
-taraxa -n testnet -d $TARAXA_NODE_PATH
+sudo docker run --rm --name taraxa-cli \
+        -v ${TARAXA_NODE_PATH}:/taraxa \
+        $TARAXA_CLI_DOCKER_IMAGE config -n testnet -d /taraxa
 
 # Pull Taraxa-Node
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
 # Run Taraxa-Node
 sudo docker run -d --name taraxa-node \
-	-v ${TARAXA_NODE_PATH}:/taraxa \
-	-e DEBUG=1 \
-    -p 10002:10002 \
-	-p 7777:7777 \
-	-p 8777:8777 \
-	-p 10002:10002/udp \
-    --restart always \
-	${TARAXA_NODE_DOCKER_IMAGE} --conf_taraxa /taraxa/conf/testnet.json
+        -v ${TARAXA_NODE_PATH}:/taraxa \
+        -e DEBUG=1 \
+        -p 10002:10002 \
+        -p 7777:7777 \
+        -p 8777:8777 \
+        -p 10002:10002/udp \
+        --restart always \
+        ${TARAXA_NODE_DOCKER_IMAGE} --conf_taraxa /taraxa/conf/testnet.json
