@@ -34,7 +34,7 @@ npm install -g taraxa-cli
 git clone https://github.com/Taraxa-project/taraxa-ops.git /opt/taraxa-ops/
 
 #Generate config
-taraxa-cli -d $TARAXA_NODE_PATH
+taraxa -n testnet -d $TARAXA_NODE_PATH
 
 # Pull Taraxa-Node
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
