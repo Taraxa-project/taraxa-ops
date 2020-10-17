@@ -4,7 +4,7 @@
 # This is initial developed to be used as startup script for cloud virtual machines to help new users to get a node running.
 
 TARAXA_NODE_PATH=/opt/taraxa-node
-TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa/taraxa:1.4.2-26
+TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa:1.4.2-26
 
 # Install docker and tools
 sudo apt-get remove -y docker docker-engine docker.io containerd runc
