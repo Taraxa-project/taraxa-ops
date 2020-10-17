@@ -23,17 +23,20 @@ sudo add-apt-repository \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 
-# Pull Taraxa-Node
-sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
+# # Pull Taraxa-Node
+# sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
-#Generate config
-sudo docker run -it --name taraxa \
-        -v ${TARAXA_NODE_PATH}:/taraxa \
-        -e DEBUG=1 \
-        -p 10002:10002 \
-        -p 7777:7777 \
-        -p 8777:8777 \
-        -p 10002:10002/udp \
-        --restart always \
-        --entrypoint /usr/bin/sh \
-        $TARAXA_NODE_DOCKER_IMAGE -c "taraxa config -n testnet -d /var/taraxa && ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/testnet.json"
+# #Generate config
+# sudo docker run -it --name taraxa \
+#         -v ${TARAXA_NODE_PATH}:/taraxa \
+#         -e DEBUG=1 \
+#         -p 10002:10002 \
+#         -p 7777:7777 \
+#         -p 8777:8777 \
+#         -p 10002:10002/udp \
+#         --restart always \
+#         --entrypoint /usr/bin/sh \
+#         $TARAXA_NODE_DOCKER_IMAGE -c "taraxa config -n testnet -d /var/taraxa && ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/testnet.json"
+
+
+docker-compose -f ./scripts/docker-compose.yml up
