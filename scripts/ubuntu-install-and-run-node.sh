@@ -29,6 +29,7 @@ sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 #Generate config
 sudo docker run --rm --name taraxa-cli \
         -v ${TARAXA_NODE_PATH}:/taraxa \
+        --entrypoint /usr/bin/sh \
         $TARAXA_NODE_DOCKER_IMAGE config -n testnet -d /taraxa
 
 # Run Taraxa-Node
