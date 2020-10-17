@@ -4,8 +4,7 @@
 # This is initial developed to be used as startup script for cloud virtual machines to help new users to get a node running.
 
 TARAXA_NODE_PATH=/opt/taraxa-node
-TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa-node:20201013_16h41m19s-8fe3f9fc588e78d45a6a725deffd7e9a23741301
-TARAXA_CLI_DOCKER_IMAGE=taraxa/cli:latest
+TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa/taraxa:1.4.2-26
 
 # Install docker and tools
 sudo apt-get remove -y docker docker-engine docker.io containerd runc
@@ -24,16 +23,13 @@ sudo add-apt-repository \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 
-# Pull taraxa/cli
-sudo docker pull ${TARAXA_CLI_DOCKER_IMAGE}
+# Pull Taraxa-Node
+sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
 #Generate config
 sudo docker run --rm --name taraxa-cli \
         -v ${TARAXA_NODE_PATH}:/taraxa \
-        $TARAXA_CLI_DOCKER_IMAGE config -n testnet -d /taraxa
-
-# Pull Taraxa-Node
-sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
+        $TARAXA_NODE_DOCKER_IMAGE config -n testnet -d /taraxa
 
 # Run Taraxa-Node
 sudo docker run -d --name taraxa-node \
