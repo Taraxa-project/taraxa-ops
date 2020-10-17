@@ -18,7 +18,7 @@ services:
         entrypoint:
             /usr/bin/sh
         command: >
-            -c "taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9 &&
+            -c "taraxa config -n testnet -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9 &&
                 ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/private.json --boot_node"
         volumes:
             - taraxa_data:/var/taraxa
