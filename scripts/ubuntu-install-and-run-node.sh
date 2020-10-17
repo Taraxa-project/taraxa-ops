@@ -7,33 +7,27 @@ TARAXA_NODE_PATH=/opt/taraxa-node
 TARAXA_NODE_DOCKER_IMAGE=taraxa/taraxa:1.4.2-26
 
 # Install docker and tools
-sudo apt-get remove -y docker docker-engine docker.io containerd runc
-sudo apt-get update
-sudo apt-get install -y \
-	apt-transport-https \
-	ca-certificates \
-	curl \
-	gnupg-agent \
-	software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-	$(lsb_release -cs) \
-	stable"
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
+# sudo apt-get remove -y docker docker-engine docker.io containerd runc
+# sudo apt-get update
+# sudo apt-get install -y \
+# 	apt-transport-https \
+# 	ca-certificates \
+# 	curl \
+# 	gnupg-agent \
+# 	software-properties-common
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+# sudo add-apt-repository \
+# 	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+# 	$(lsb_release -cs) \
+# 	stable"
+# sudo apt-get update
+# sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 
 # Pull Taraxa-Node
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
 #Generate config
-sudo docker run --rm --name taraxa-cli \
-        -v ${TARAXA_NODE_PATH}:/taraxa \
-        --entrypoint /usr/bin/sh \
-        $TARAXA_NODE_DOCKER_IMAGE config -n testnet -d /taraxa
-
-# Run Taraxa-Node
-sudo docker run -d --name taraxa-node \
+sudo docker run -it --name taraxa \
         -v ${TARAXA_NODE_PATH}:/taraxa \
         -e DEBUG=1 \
         -p 10002:10002 \
@@ -41,4 +35,5 @@ sudo docker run -d --name taraxa-node \
         -p 8777:8777 \
         -p 10002:10002/udp \
         --restart always \
-        ${TARAXA_NODE_DOCKER_IMAGE} --conf_taraxa /taraxa/conf/testnet.json
+        --entrypoint /usr/bin/sh \
+        $TARAXA_NODE_DOCKER_IMAGE -c "taraxa config -n testnet -d /var/taraxa && ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/testnet.json"
