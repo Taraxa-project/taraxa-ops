@@ -4,7 +4,23 @@ Taraxa node operation master repository
 ![Image of Taraxa Aphrogenes](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/taraxa_aphrogenes.png)
 
 
-# Runing Taraxa-node at Digital Ocean
+# Running Taraxa-node with docker-compose
+
+Download the [docker-compose.yml](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/docker-compose.yml) file to your machine that has Docker installed.
+
+Run the following command to start taraxa-node in a terminal:
+
+```
+docker-compose up
+```
+
+It can also be started as a background service:
+
+```
+docker-compose up -d
+```
+
+# Running Taraxa-node at Digital Ocean
 You only need a Digital Ocean account to be able to run a Taraxa-node against the testnet.
 Follow this instructions to get a Digital Ocean account https://www.digitalocean.com/docs/getting-started/sign-up/
 
