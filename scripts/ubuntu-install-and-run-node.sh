@@ -27,7 +27,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io git jq
 sudo docker pull ${TARAXA_NODE_DOCKER_IMAGE}
 
 # #Generate config
-sudo docker run -it --name taraxa \
+sudo docker run -d --name taraxa \
         -v ${TARAXA_NODE_PATH}:/var/taraxa \
         -e DEBUG=1 \
         -p 10002:10002 \
