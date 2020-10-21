@@ -4,7 +4,7 @@ volumes:
 services:
     taraxa-node:
         container_name: taraxa-node
-        image: taraxa/taraxa:1.4.2-26
+        image: taraxa/taraxa:1.5.13-43
         restart: always
         ports:
             - "10002:10002"
