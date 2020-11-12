@@ -19,6 +19,6 @@ services:
             /usr/bin/sh
         command: >
             -c "taraxa config -n testnet -d /var/taraxa &&
-                ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/testnet.json"
+                ./main --conf_taraxa /var/taraxa/conf/testnet.json"
         volumes:
             - taraxa_data:/var/taraxa

@@ -36,4 +36,4 @@ sudo docker run -d --name taraxa \
         -p 10002:10002/udp \
         --restart always \
         --entrypoint /usr/bin/sh \
-        $TARAXA_NODE_DOCKER_IMAGE -c "taraxa config -n testnet -d /var/taraxa && ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/testnet.json"
+        $TARAXA_NODE_DOCKER_IMAGE -c "taraxa config -n testnet -d /var/taraxa && ./main --conf_taraxa /var/taraxa/conf/testnet.json"
