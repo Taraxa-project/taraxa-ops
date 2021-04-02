@@ -1,10 +1,10 @@
 version: '3'
 volumes:
-    taraxa_data:
+    taraxa-data:
 services:
     taraxa-node:
         container_name: taraxa-node
-        image: taraxa/taraxa:1.5.50-83
+        image: taraxa/taraxa-node:latest
         restart: always
         ports:
             - "10002:10002"
@@ -18,7 +18,7 @@ services:
         entrypoint:
             /usr/bin/sh
         command: >
-            -c "taraxa config -n testnet -d /var/taraxa &&
-                ./main --conf_taraxa /var/taraxa/conf/testnet.json"
+            -c "mkdir -p /opt/taraxa_data/conf && ./cli/taraxa config node --network testnet --file /opt/taraxa_data/conf/testnet.json --prop-override db_path:/opt/taraxa_data --prop-override network_sync_level_size:10 &&
+                taraxad --conf_taraxa /opt/taraxa_data/conf/testnet.json ; while true; do echo 'Crashed. Waiting on diagnosis.'; sleep 60; done"
         volumes:
-            - taraxa_data:/var/taraxa
+            - taraxa-data:/opt/taraxa_data
