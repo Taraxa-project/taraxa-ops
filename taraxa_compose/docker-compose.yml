@@ -1,0 +1,20 @@
+version: "3"
+services:
+  node:
+    image: taraxa/taraxa-node:latest
+    restart: always
+    ports:
+      - "10002:10002"
+      - "10002:10002/udp"
+      - "7777:7777"
+      - "8777:8777"
+    entrypoint: /usr/bin/sh
+    command: >
+      -c "mkdir -p /opt/taraxa_data/data &&
+          ./cli/taraxa config node --network testnet --file /opt/taraxa_data/conf/testnet.json --prop-override db_path:/opt/taraxa_data/data &&
+          taraxad --conf_taraxa /opt/taraxa_data/conf/testnet.json"
+    volumes:
+      - ./config:/opt/taraxa_data/conf
+      - data:/opt/taraxa_data/data
+volumes:
+  data:
