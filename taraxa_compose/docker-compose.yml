@@ -16,5 +16,15 @@ services:
     volumes:
       - ./config:/opt/taraxa_data/conf
       - data:/opt/taraxa_data/data
+  status-app:
+    build:
+      context: status-app
+    environment:
+      - NEXT_PUBLIC_RPC=http://node:7777
+    restart: always
+    depends_on:
+      - node
+    ports:
+      - "3000:3000"
 volumes:
   data:
