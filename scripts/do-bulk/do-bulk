@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import click
 import digitalocean
 import requests
@@ -23,11 +25,11 @@ def cli():
 
 @cli.command()
 @click.option('--nodes', default=1, help='Number of nodes')
-@click.option('--project', default=None, help='Project')
+@click.option('--project', default=None, help='Project name')
 @click.option('--explorer-key', default=None, help='Explorer private key for delegation')
 def create(nodes, project=None, explorer_key=None):
     if explorer_key is None:
-        print("The explorer key is required.")
+        click.echo("The explorer key is required.")
         quit(1)
 
     manager = get_manager()
@@ -54,10 +56,10 @@ def create(nodes, project=None, explorer_key=None):
 
         droplets.append(droplet)
 
-    print('Waiting for droplets to start...')
+    click.echo('Waiting for droplets to start...')
     droplets = wait_for_droplets(droplets)
 
-    print('Checking droplets wallets...')
+    click.echo('Checking droplets wallets...')
     wallets = {}
     while True:
         completed = []
@@ -81,7 +83,7 @@ def create(nodes, project=None, explorer_key=None):
                         f'https://explorer.testnet.taraxa.io/api/delegate/0x{wallet}?sig={sig_hex}')
 
             except:
-                print(
+                click.echo(
                     f'Droplet {droplet.name} not ready yet')
 
             time.sleep(10)
@@ -89,7 +91,7 @@ def create(nodes, project=None, explorer_key=None):
         if len(completed) == len(droplets):
             break
 
-    print(wallets)
+    click.echo(wallets)
 
 
 @cli.command()
@@ -100,12 +102,45 @@ def projects():
     projects = manager.get_all_projects()
 
     if len(projects) == 0:
-        print(f'No projects found.')
+        click.echo(f'No projects found.')
         quit(1)
 
-    print("Projects:")
+    click.echo("{:<36} {:<30}".format('Id', 'Name'))
     for project in projects:
-        print(f'{project.name}')
+        click.echo("{:<36} {:<30}".format(project.id, project.name))
+
+
+@cli.command()
+@click.option('--project', default=None, help='Project name')
+def delete(project):
+    manager = get_manager()
+    check_auth(manager)
+
+    project = check_project(manager, project)
+    resources = project.get_all_resources()
+
+    droplets = []
+    for resource in resources:
+        if "do:droplet:" not in resource:
+            continue
+
+        droplet_id = resource.replace("do:droplet:", "")
+        droplet = manager.get_droplet(droplet_id)
+
+        if DROPLET_BASE_NAME not in droplet.name:
+            continue
+
+        droplets.append(droplet)
+
+    if len(droplets) == 0:
+        click.echo(f'No droplets found.')
+        quit(1)
+
+    click.echo(f"Deleting droplets in {project.name}...")
+    click.echo("{:<10} {:<30}".format('Id', 'Name'))
+    for droplet in droplets:
+        click.echo("{:<10} {:<30}".format(droplet.id, droplet.name))
+        droplet.destroy()
 
 
 def get_manager():
@@ -122,8 +157,8 @@ def check_auth(manager):
     try:
         manager.get_account()
     except:
-        print("Could not authenticate you.")
-        print(
+        click.echo("Could not authenticate you.")
+        click.echo(
             "Export the API key (DIGITALOCEAN_ACCESS_TOKEN=xxxx) before running the script.")
         quit(1)
 
@@ -141,7 +176,7 @@ def check_project(manager, project):
                 break
 
         if np is None:
-            print(f'Project {project} not found.')
+            click.echo(f'Project {project} not found.')
             quit(1)
 
         project = np
@@ -162,7 +197,7 @@ def get_user_data():
     try:
         user_data = requests.get(DROPLET_USER_DATA_SCRIPT).text
     except:
-        print(
+        click.echo(
             f'Could not fetch user data script from {DROPLET_USER_DATA_SCRIPT}')
         quit(1)
 
