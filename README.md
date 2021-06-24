@@ -6,17 +6,19 @@ Taraxa node operation master repository
 
 # Running Taraxa-node with docker-compose
 
-Download the [docker-compose.yml](https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/docker-compose.yml) file to your machine that has Docker installed.
+Clone the repository to your machine that has Docker installed.
 
 Run the following command to start taraxa-node in a terminal:
 
 ```
+cd taraxa_compose
 docker-compose up
 ```
 
 It can also be started as a background service:
 
 ```
+cd taraxa_compose
 docker-compose up -d
 ```
 
