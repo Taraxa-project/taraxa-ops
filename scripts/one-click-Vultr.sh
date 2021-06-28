@@ -63,29 +63,27 @@ if [ "$DROPLET_PLAN_NUMBER" == 0 ]; then
 fi
 DROPLET_PLAN_LIST_CHOICE=$(echo "$DROPLET_PLAN_LIST" | awk -v DROPLET_PLAN_NUMBER="$DROPLET_PLAN_NUMBER" '{if(NR>0&&NR<=DROPLET_PLAN_NUMBER+1) print $0}')
 echo "$DROPLET_PLAN_LIST_CHOICE"
-read -p "$SHELL_LOG_PREFIX Please select plan [input ID, default: vc2-4c-8gb] > " DROPLET_PLAN_ID_INPUT
-if [ -n "$DROPLET_PLAN_ID_INPUT" ]; then
-    DROPLET_PLAN_ID=$DROPLET_PLAN_ID_INPUT
-fi
-echo "$SHELL_LOG_PREFIX You choose plan: $DROPLET_PLAN_ID"
+echo "$SHELL_LOG_PREFIX choose plan: $DROPLET_PLAN_ID"
 # filter available region list
 DROPLET_PLAN_LIST_SELECT=$(echo "$DROPLET_PLAN_LIST" | awk '{if($1~/^'"$DROPLET_PLAN_ID"'$/)print}' | awk '{for(i=9;i<=NF;i++)print $i}' | awk '{gsub(/[\[|\]]/,"");print}')
 
 # Get Zone
-echo "$SHELL_LOG_PREFIX get regions list..."
-DROPLET_REGION_LIST=$($VCLI_PATH regions list)
-DROPLET_REGION_LIST_HEAD=$(echo "$DROPLET_REGION_LIST" | awk '{if($1~/^ID$/) print}')
-echo "$DROPLET_REGION_LIST_HEAD"
+LENGTH=0
 for item in ${DROPLET_PLAN_LIST_SELECT[*]}
 do
-    DROPLET_REGION_LIST_CHOICE=$(echo "$DROPLET_REGION_LIST" | awk '{if($1~/^'"$item"'$/) print}')
-    echo "$DROPLET_REGION_LIST_CHOICE"
+    LENGTH=$(($LENGTH + 1))
 done
-read -p "$SHELL_LOG_PREFIX Please select region [input ID, default: ams] > " DROPLET_REGION_ID_INPUT
-if [ -n "$DROPLET_REGION_ID_INPUT" ]; then
-    DROPLET_REGION_ID=$DROPLET_REGION_ID_INPUT
-fi
-echo "$SHELL_LOG_PREFIX You choose region: $DROPLET_REGION_ID"
+RANDOM_NUMBER=$(($RANDOM % $LENGTH + 1))
+echo "$SHELL_LOG_PREFIX Select random number: $RANDOM_NUMBER"
+LENGTH=0
+for item in ${DROPLET_PLAN_LIST_SELECT[*]}
+do
+    LENGTH=$(($LENGTH + 1))
+	if [ "$LENGTH" == "$RANDOM_NUMBER" ]; then
+        DROPLET_REGION_ID=$item
+    fi
+done
+echo "$SHELL_LOG_PREFIX Select random region: $DROPLET_REGION_ID"
 
 RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
