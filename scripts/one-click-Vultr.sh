@@ -5,7 +5,7 @@ SHELL_LOG_PREFIX='[oneclick-vultr]'
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
 
 VCLI_PATH=${TARAXA_ONE_CLICK_PATH}/vultr-cli
-VCLI_VERSION=2.5.2
+VCLI_VERSION=2.5.3
 
 DROPLET_USERDATA_SCRIPT=${TARAXA_ONE_CLICK_PATH}/bootstrap-userdata.sh
 DROPLET_BASE_NAME=taraxa-node-oneclick
@@ -21,12 +21,18 @@ cd ${TARAXA_ONE_CLICK_PATH}
 # Get vultr-cli (we want it to always overwrite it)
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 echo "$SHELL_LOG_PREFIX begin to download vultr cli..."
+if [ "$OS" == "darwin" ]; then
+    OS="macOs"
+elif [ "$OS" == "linux" ]; then
+    OS="linux"
+else
+    echo "$SHELL_LOG_PREFIX sorry, the script is not suitable for your operating system."
+    exit 1
+fi
 curl -fsSL https://github.com/vultr/vultr-cli/releases/download/v${VCLI_VERSION}/vultr-cli_${VCLI_VERSION}_${OS}_64-bit.tar.gz | tar -xz
-RETURN=$?
-
-if [ "$RETURN" != 0 ]; then
+if [ $? != 0 ] || [ ! -f "$VCLI_PATH" ]; then
     echo "$SHELL_LOG_PREFIX download vultr cli failed! You can try again."
-	exit 1
+    exit 1
 else
     echo "$SHELL_LOG_PREFIX download vultr cli success!"
 fi
@@ -42,16 +48,21 @@ fi
 
 # Get current bootstrap script
 curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${DROPLET_USERDATA_SCRIPT}
-RETURN=$?
-
-if [ "$RETURN" != 0 ]; then
+if [ $? != 0 ]; then
     echo "$SHELL_LOG_PREFIX download bootstrap script failed! You can try again."
-	exit 1
+    exit 1
 else
     echo "$SHELL_LOG_PREFIX download bootstrap script success!"
 fi
+
 # base64 script
-DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}" | base64 -w 0)
+echo | base64 -w0 > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    # GNU coreutils base64, '-w' supported
+    DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}" | base64 -w 0)
+else
+    DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}" | base64)
+fi
 
 # Get Plan
 echo "$SHELL_LOG_PREFIX begin to get plans list..."
@@ -59,7 +70,7 @@ DROPLET_PLAN_LIST=$($VCLI_PATH plans list)
 DROPLET_PLAN_NUMBER=$(echo "$DROPLET_PLAN_LIST" | awk 'END{print}')
 if [ "$DROPLET_PLAN_NUMBER" == 0 ]; then
     echo "$SHELL_LOG_PREFIX no plan to choose, exiting..."
-	exit 1
+    exit 1
 fi
 DROPLET_PLAN_LIST_CHOICE=$(echo "$DROPLET_PLAN_LIST" | awk -v DROPLET_PLAN_NUMBER="$DROPLET_PLAN_NUMBER" '{if(NR>0&&NR<=DROPLET_PLAN_NUMBER+1) print $0}')
 echo "$DROPLET_PLAN_LIST_CHOICE"
@@ -79,7 +90,7 @@ LENGTH=0
 for item in ${DROPLET_PLAN_LIST_SELECT[*]}
 do
     LENGTH=$(($LENGTH + 1))
-	if [ "$LENGTH" == "$RANDOM_NUMBER" ]; then
+    if [ "$LENGTH" == "$RANDOM_NUMBER" ]; then
         DROPLET_REGION_ID=$item
     fi
 done
@@ -96,8 +107,8 @@ DROPLET_SCRIPT_ID=$(echo "$DROPLET_SCRIPT_LIST" | awk '{if($5~/^'"$DROPLET_SCRIP
 if [ "$DROPLET_SCRIPT_NUMBER" == 0 ] || [ -z "$DROPLET_SCRIPT_ID" ]; then
     echo "$SHELL_LOG_PREFIX begin to create script..."
     DROPLET_SCRIPT_CREATE=$(${VCLI_PATH} script create --name ${DROPLET_SCRIPT_NAME} --type boot --script ${DROPLET_USERDATA_SCRIPT})
-	echo "$DROPLET_SCRIPT_CREATE"
-	DROPLET_SCRIPT_ID=$(echo "$DROPLET_SCRIPT_CREATE" | awk 'NR==2{print $1}')
+    echo "$DROPLET_SCRIPT_CREATE"
+    DROPLET_SCRIPT_ID=$(echo "$DROPLET_SCRIPT_CREATE" | awk 'NR==2{print $1}')
 fi
 echo "$SHELL_LOG_PREFIX We will use this script, ID: $DROPLET_SCRIPT_ID"
 
@@ -107,11 +118,9 @@ ${VCLI_PATH} instance create --host ${DROPLET_NAME} \
     --region ${DROPLET_REGION_ID} \
     --plan $DROPLET_PLAN_ID \
     --script-id ${DROPLET_SCRIPT_ID}
-RETURN=$?
-
-if [ "$RETURN" != 0 ]; then
+if [ $? != 0 ]; then
     echo "$SHELL_LOG_PREFIX failed to deploy..."
-	exit 1
+    exit 1
 else
     echo "$SHELL_LOG_PREFIX successful!"
 fi
