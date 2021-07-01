@@ -28,7 +28,7 @@ function setupSwap {
 function installDocker {
 	wget -O get-docker.sh https://get.docker.com 
 	sudo sh get-docker.sh
-	sudo apt install -y docker-compose docker.io < "/dev/null"
+	sudo apt install -y docker-compose < "/dev/null"
 	rm -f get-docker.sh
 }
 
