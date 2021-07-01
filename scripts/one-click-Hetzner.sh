@@ -90,7 +90,7 @@ ${HCLOUD_PATH} server create --name ${HCLOUD_NAME} \
     --image ${HCLOUD_IMAGE_ID} \
     --location ${HCLOUD_LOCATION} \
     --type $HCLOUD_PLAN_ID \
-    --user-data-from-file ${HCLOUD_USERDATA_SCRIPT} $APPEND_SSH_KEY
+    --user-data-from-file ${HCLOUD_USERDATA_SCRIPT}
 if [ $? != 0 ]; then
     echo "$SHELL_LOG_PREFIX failed to deploy..."
     exit 1
