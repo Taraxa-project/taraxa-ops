@@ -85,25 +85,6 @@ echo $HCLOUD_LOCATION
 RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 HCLOUD_NAME=${HCLOUD_BASE_NAME}-$RND_STR
 
-SSH_KEY_1=`${HCLOUD_PATH} ssh-key list | awk '/^[0-9].+ / {print $2}' | head -1`
-APPEND_SSH_KEY=""
-if [[ ! -z "$SSH_KEY_1" ]]; then
-  # We have configured ssh key already
-  echo "$SHELL_LOG_PREFIX Using first configured SSH key $SSH_KEY_1"
-  APPEND_SSH_KEY=" --ssh-key $SSH_KEY_1"
-fi
-
-# Check for ssh public key
-if [ -f $HOME/.ssh/id_rsa.pub -a -z "$SSH_KEY_1" ]; then
-   # We can add local ssh pubkey to cloud
-   echo -n "$SHELL_LOG_PREFIX Do you want to configure ssh-key access with local $HOME/.ssh/id_rsa.pub? [y/N] "
-   read use_ssh
-   if [ "x$use_ssh" == "xy" -o "x$use_ssh" == "xY" ]; then
-	${HCLOUD_PATH} ssh-key create --name taraxa-one-click-key --public-key-from-file  $HOME/.ssh/id_rsa.pub
-        [ $? -eq 0 ] && APPEND_SSH_KEY=" --ssh-key taraxa-one-click-key"
-   fi
-fi
-
 # Create server
 ${HCLOUD_PATH} server create --name ${HCLOUD_NAME} \
     --image ${HCLOUD_IMAGE_ID} \
