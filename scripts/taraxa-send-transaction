@@ -1,0 +1,50 @@
+#!/bin/bash
+
+GAS=300000
+GAS_PRICE=1000000000
+RPC_ADDRESS=localhost
+RPC_PORT=7777
+NONCE_FILE=/root/nonce-file.txt
+
+if [ -f "$NONCE_FILE" ]; then
+    NONCE=$(cat ${NONCE_FILE})
+else
+    NONCE=0
+fi
+
+echo "Enter the amount you want to send:"
+read VALUE
+
+echo "Enter the destination Address:"
+read RECV_ADDRESS
+
+SECRET=$(grep Private /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2  | sed 's/ //g')
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "send_coin_transaction",
+  "params": [
+    {
+	  "nonce": ${NONCE},
+	  "value": ${VALUE},
+	  "gas": "${GAS}",
+	  "gas_price": "$GAS_PRICE",
+	  "receiver": "${RECV_ADDRESS}",
+	  "secret": "${SECRET}"
+	}
+  ]
+}
+EOF
+)
+echo "POST_DATA:"
+echo "${DATA}"
+
+RESULT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT})
+# TODO Improve this parse/print
+echo "RESULT:"
+echo ${RESULT} | jq
+
+NONCE=$((NONCE+1))
+echo ${NONCE} > ${NONCE_FILE}

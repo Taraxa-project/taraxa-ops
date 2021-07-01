@@ -1,0 +1,56 @@
+#!/bin/bash
+
+RPC_ADDRESS=localhost
+RPC_PORT=7777
+MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
+
+BALANCE=$(taraxa-check-balance)
+
+NODECOUNT=$(taraxa-node-count)
+
+PEERCOUNT=$(taraxa-peer-count)
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id":0,
+  "method": "get_executed_trx_count",
+  "params": [
+    {
+    }
+  ]
+}
+EOF
+)
+
+EXECUTEDTRXCOUNT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT} | jq .result.value)
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id":0,
+  "method": "get_dag_size",
+  "params": [
+    {
+    }
+  ]
+}
+EOF
+)
+
+DAGSIZE=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT} | jq .result.value)
+
+DAGSIZE=$(awk -F"," '{gsub(/"/, "", $1); print $1}' <<< ${DAGSIZE})
+
+echo "Account Address:"
+echo ${MY_ADDRESS}
+echo "Account balance:"
+echo ${BALANCE}
+echo "Executed transaction count:"
+echo ${EXECUTEDTRXCOUNT}
+echo "Dag size:"
+echo ${DAGSIZE}
+echo "Node count:"
+echo ${NODECOUNT}
+echo "Connected peers:"
+echo ${PEERCOUNT}

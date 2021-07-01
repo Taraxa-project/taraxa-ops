@@ -1,0 +1,26 @@
+#!/bin/bash
+
+RPC_ADDRESS=localhost
+RPC_PORT=7777
+MY_ADDRESS=$(grep Address /opt/ethereum-generate-wallet/generated-account.txt | cut -d':' -f2 | sed 's/     0x//g')
+
+
+DATA=$(cat <<EOF
+{
+  "jsonrpc": "2.0",
+  "id":0,
+  "method": "get_account_balance",
+  "params": [
+    {
+      "address": "${MY_ADDRESS}"
+    }
+  ]
+}
+EOF
+)
+
+RESULT=$(curl -s -d "${DATA}"  -H 'content-type:text/plain;' ${RPC_ADDRESS}:${RPC_PORT}  |  jq .result.value)
+
+BALANCE=$(sed -e 's/^"//' -e 's/"$//' <<< "${RESULT}")
+
+echo ${BALANCE}
