@@ -37,13 +37,22 @@ echo "Setting you up at a location: ${AZ_LOCATION}"
 
 echo "Creating a resource group ${AZ_GROUP_NAME}"
 
-az group create --name ${AZ_GROUP_NAME} --location ${AZ_LOCATION} 
+# it's not guaranteed that every location can create a group, so loop until we get one that can (should not take long unless RNG)
+while true; do
+
+FAILURE=$(az group create --name ${AZ_GROUP_NAME} --location ${AZ_LOCATION} | grep LocationNotAvailableForResourceGroup)
+
+if [ -z "$FAILURE" ]; then
+    break
+fi 
+
+done
 
 echo "Creating an App Service ${AZ_APP_SERVICE_NAME}"
 
 az vm create --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --image UbuntuLTS --generate-ssh-keys --size Standard_F4
 
-echo "Take note of the IP address given above, that is your node's public address"
+echo "Take note of the publicIPAddress given above, that is your node's public address"
 
 echo "Bootstrapping your node"
 
@@ -55,8 +64,6 @@ az vm extension set \
   --protected-settings '{"fileUris": ["https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh"],"commandToExecute": "./ubuntu-install-and-run-node.sh"}'
 
 # open ports
-az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 10022
-az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 7777
-az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 8777
+az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 7777,8777,10022 > /dev/null
 
 echo "Complete! Use ssh <your-nodes-ip> to login and run sudo docker ps to make sure your node is up and running"
