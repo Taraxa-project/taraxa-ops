@@ -43,6 +43,8 @@ echo "Creating an App Service ${AZ_APP_SERVICE_NAME}"
 
 az vm create --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --image UbuntuLTS --generate-ssh-keys --size Standard_F4
 
+echo "Take note of the IP address given above, that is your node's public address"
+
 echo "Bootstrapping your node"
 
 # we can just directly get the script from github
@@ -51,3 +53,10 @@ az vm extension set \
   --vm-name ${AZ_APP_SERVICE_NAME} --name customScript \
   --publisher Microsoft.Azure.Extensions \
   --protected-settings '{"fileUris": ["https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh"],"commandToExecute": "./ubuntu-install-and-run-node.sh"}'
+
+# open ports
+az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 10022
+az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 7777
+az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 8777
+
+echo "Complete! Use ssh <your-nodes-ip> to login and run sudo docker ps to make sure your node is up and running"
