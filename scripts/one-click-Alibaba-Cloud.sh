@@ -22,7 +22,7 @@ DROPLET_SCRIPT_NAME="taraxa-node-oneclick"
 mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
 
-# Get vultr-cli (we want it to always overwrite it)
+# Get alibaba cloud cli (we want it to always overwrite it)
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 if [ "$OS" == "darwin" ]; then
     OS="macosx"
@@ -171,7 +171,7 @@ if [[ -z $DROPLET_VSWITCH_QUERY ]] || [ "$DROPLET_VSWITCH_QUERY" == "null" ]; th
     elif [[ $DROPLET_ZONE_ID == *b ]]; then
         DROPLET_VPC_SUB_CIDR_BLOCK="172.17.0.0/16"
     elif [[ $DROPLET_ZONE_ID == *c ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.1 8.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="172.18.0.0/16"
     elif [[ $DROPLET_ZONE_ID == *d ]]; then
         DROPLET_VPC_SUB_CIDR_BLOCK="172.19.0.0/16"
     elif [[ $DROPLET_ZONE_ID == *e ]]; then
