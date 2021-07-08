@@ -163,7 +163,7 @@ if [ $? != 0 ]; then
 fi
 
 # open ports
-az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 7777,8777,10022 > /dev/null
+az vm open-port --resource-group ${AZ_GROUP_NAME} --name ${AZ_APP_SERVICE_NAME} --port 3000,7777,8777,10002 > /dev/null
 
 if [ $? != 0 ]; then 
   echo "Error opening ports"
