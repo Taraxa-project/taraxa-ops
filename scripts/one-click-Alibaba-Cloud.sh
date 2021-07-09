@@ -5,7 +5,7 @@ SHELL_LOG_PREFIX='[oneclick-alibaba-cloud]'
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
 
 ALYCLI_PATH=${TARAXA_ONE_CLICK_PATH}/aliyun
-ALYCLI_VERSION=3.0.80
+ALYCLI_VERSION=3.0.81
 
 JQCLI_PATH=${TARAXA_ONE_CLICK_PATH}/jq
 
@@ -102,8 +102,9 @@ fi
 echo "$SHELL_LOG_PREFIX script: $DROPLET_USERDATA_SCRIPT"
 
 
-# Check real-name authentication, only someone verified, can purchase ECS instances on Chinese region.
+# Check real-name authentication, only someone verified, can purchase ECS instances.
 echo "$SHELL_LOG_PREFIX begin to check real-name authentication..."
+sleep 1
 ALY_CHECK_PERMISSION_RESULT=$($ALYCLI_PATH ecs DescribeAccountAttributes --RegionId "cn-hangzhou" --AttributeName.1 "real-name-authentication" | $JQCLI_PATH -r '.AccountAttributeItems.AccountAttributeItem[0].AttributeValues.ValueItem[0].Value')
 echo "$SHELL_LOG_PREFIX check real-name authentication result: $ALY_CHECK_PERMISSION_RESULT"
 ALY_REAL_NAME_PERMISSION_FLAG=0
@@ -111,7 +112,8 @@ if [ "$ALY_CHECK_PERMISSION_RESULT" == 'yes' ]; then
     echo "$SHELL_LOG_PREFIX We can use ECS instances on Chinese region."
 	ALY_REAL_NAME_PERMISSION_FLAG=1
 else
-    echo "$SHELL_LOG_PREFIX Sorry, Chinese region is not permitted to use. You need finish real-name authentication."
+    echo "$SHELL_LOG_PREFIX Sorry, Chinese region is not permitted to use. You have to finish real-name authentication."
+    echo "$SHELL_LOG_PREFIX Try to create an ECS instance, that not on Chinese region, and it will probably fail at last."
 	ALY_REAL_NAME_PERMISSION_FLAG=0
 fi
 
@@ -127,7 +129,30 @@ RANDOM_NUMBER=$(($RANDOM % $LENGTH))
 DROPLET_REGION_ID=$(echo $DROPLET_REGION_LIST | $JQCLI_PATH -r -s --arg RANDOM_NUMBER $RANDOM_NUMBER '.[$RANDOM_NUMBER|tonumber]')
 echo "$SHELL_LOG_PREFIX Select random region: $DROPLET_REGION_ID"
 
+# Check SSH Key Pair
+sleep 1
+DROPLET_KEY_PAIR_NAME='kp-taraxa-node-oneclick'
+DROPLET_KEY_PAIR_DESCRIBE=$($ALYCLI_PATH ecs DescribeKeyPairs --RegionId $DROPLET_REGION_ID --KeyPairName $DROPLET_KEY_PAIR_NAME | $JQCLI_PATH '.KeyPairs.KeyPair[0]')
+if [[ -z $DROPLET_KEY_PAIR_DESCRIBE ]] || [ "$DROPLET_KEY_PAIR_DESCRIBE" == 'null' ]; then
+    echo "$SHELL_LOG_PREFIX No available Key Pair in $DROPLET_REGION_ID, begin to create Key Pair..."
+    DROPLET_KEY_PAIR_CREATE=$($ALYCLI_PATH ecs CreateKeyPair --RegionId $DROPLET_REGION_ID --KeyPairName $DROPLET_KEY_PAIR_NAME)
+    if [ $? != 0 ]; then
+        echo "$SHELL_LOG_PREFIX CreateKeyPair Error: $DROPLET_KEY_PAIR_CREATE"
+        echo "$SHELL_LOG_PREFIX Create Key Pair failed, you can try again..."
+        exit 1
+    else
+        echo "$SHELL_LOG_PREFIX Create Key Pair successful!"
+        echo "$SHELL_LOG_PREFIX ##############################################################"
+        echo "Note: Alicloud keeps the public key part of the key and returns the unencrypted private key in the format of PKCs × 8 encoded by PEM. You need to keep the private key properly!"
+        echo "$SHELL_LOG_PREFIX ##############################################################"
+		echo "$SHELL_LOG_PREFIX $DROPLET_KEY_PAIR_CREATE"
+        DROPLET_KEY_PAIR_ID=$(echo $DROPLET_KEY_PAIR_CREATE | $JQCLI_PATH -r '.KeyPairId')
+    fi
+fi
+echo "$SHELL_LOG_PREFIX We will use this Key Pair: $DROPLET_KEY_PAIR_NAME"
+
 # Get instance type
+sleep 1
 DROPLET_RECOMMEND_INSTANCE_DESCRIBE=$($ALYCLI_PATH ecs DescribeRecommendInstanceType --NetworkType vpc --RegionId $DROPLET_REGION_ID --Cores $DROPLET_CPU_CORES --Memory $DROPLET_MEMORY)
 if [ $? != 0 ]; then
     echo "$SHELL_LOG_PREFIX DescribeRecommendInstanceType Error: $DROPLET_RECOMMEND_INSTANCE_DESCRIBE"
@@ -140,10 +165,11 @@ DROPLET_INSTANCE_TYPE_ID=$(echo $DROPLET_RECOMMEND_INSTANCE_TYPE | $JQCLI_PATH -
 DROPLET_ZONE_ID=$(echo $DROPLET_RECOMMEND_INSTANCE_TYPE | $JQCLI_PATH -r '.ZoneId')
 
 # Get VPC
+sleep 1
 echo "$SHELL_LOG_PREFIX Query available VPC in $DROPLET_REGION_ID..."
-DROPLET_VPC_QUERY=$($ALYCLI_PATH ecs DescribeVpcs --RegionId $DROPLET_REGION_ID | $JQCLI_PATH '.Vpcs.Vpc[0] | select(.Status == "Available")')
+DROPLET_VPC_QUERY=$($ALYCLI_PATH ecs DescribeVpcs --RegionId $DROPLET_REGION_ID | $JQCLI_PATH '.Vpcs.Vpc[0] | select(.Status == "Available" and .CidrBlock == "10.88.0.0/16")')
 DROPLET_VPC_ID=""
-DROPLET_VPC_CIDR_BLOCK="172.16.0.0/12"
+DROPLET_VPC_CIDR_BLOCK="10.88.0.0/16"
 if [[ -z $DROPLET_VPC_QUERY ]] || [ "$DROPLET_VPC_QUERY" == 'null' ]; then
     echo "$SHELL_LOG_PREFIX No available VPC in $DROPLET_REGION_ID, begin to create VPC..."
     DROPLET_VPC_CREATE=$($ALYCLI_PATH ecs CreateVpc --RegionId $DROPLET_REGION_ID --CidrBlock $DROPLET_VPC_CIDR_BLOCK)
@@ -161,49 +187,75 @@ else
 fi
 echo "$SHELL_LOG_PREFIX We will use this VPC: $DROPLET_VPC_ID"
 
+# Get Security Group
+echo "$SHELL_LOG_PREFIX Query Security Group in $DROPLET_REGION_ID and VpcId($DROPLET_VPC_ID)..."
+sleep 5
+DROPLET_SG_ID=""
+DROPLET_SG_NAME="sg-taraxa-node-oneclick"
+DROPLET_SG_QUERY=$($ALYCLI_PATH ecs DescribeSecurityGroups --RegionId $DROPLET_REGION_ID --VpcId $DROPLET_VPC_ID --SecurityGroupName $DROPLET_SG_NAME | $JQCLI_PATH '.SecurityGroups.SecurityGroup[0]')
+if [[ -z $DROPLET_SG_QUERY ]] || [ "$DROPLET_SG_QUERY" == 'null' ]; then
+    echo "$SHELL_LOG_PREFIX No available Security Group in $DROPLET_REGION_ID ($DROPLET_VPC_ID), begin to create Security Group..."
+    DROPLET_SG_CREATE=$($ALYCLI_PATH ecs CreateSecurityGroup --RegionId $DROPLET_REGION_ID --VpcId $DROPLET_VPC_ID --SecurityGroupName $DROPLET_SG_NAME)
+    if [ $? != 0 ]; then
+        echo "$SHELL_LOG_PREFIX CreateSecurityGroup Error: $DROPLET_SG_CREATE"
+        echo "$SHELL_LOG_PREFIX Create Security Group failed, you can try again..."
+        exit 1
+    else
+        DROPLET_SG_ID=$(echo $DROPLET_SG_CREATE | $JQCLI_PATH -r '.SecurityGroupId')
+        echo "$SHELL_LOG_PREFIX Create Security Group successful!"
+        echo "$SHELL_LOG_PREFIX Now, we need to permit ICMP and expose TCP ports: 22, 3000, 7777, 8777, 10002"
+        DROPLET_SG_AUTH_CREATE=$($ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol icmp --PortRange=-1/-1 --SourceCidrIp 0.0.0.0/0 && $ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol tcp --PortRange=22/22 --SourceCidrIp 0.0.0.0/0 && $ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol tcp --PortRange=3000/3000 --SourceCidrIp 0.0.0.0/0 && $ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol tcp --PortRange=7777/7777 --SourceCidrIp 0.0.0.0/0 && $ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol tcp --PortRange=8777/8777 --SourceCidrIp 0.0.0.0/0 && $ALYCLI_PATH ecs AuthorizeSecurityGroup --RegionId $DROPLET_REGION_ID --SecurityGroupId $DROPLET_SG_ID --IpProtocol tcp --PortRange=10002/10002 --SourceCidrIp 0.0.0.0/0)
+        if [ $? != 0 ]; then
+            echo "$SHELL_LOG_PREFIX AuthorizeSecurityGroup Error: $DROPLET_SG_AUTH_CREATE"
+            echo "$SHELL_LOG_PREFIX Create Security Group Authorize failed, you can try again..."
+            exit 1
+        else
+            echo "$SHELL_LOG_PREFIX Create Security Group Authorize success!"
+        fi
+    fi
+else
+    DROPLET_SG_ID=$(echo $DROPLET_SG_QUERY | $JQCLI_PATH -r '.SecurityGroupId')
+fi
+echo "$SHELL_LOG_PREFIX We will use this Security Group: $DROPLET_SG_ID"
+
 # Get VSwitch
-DROPLET_VSWITCH_QUERY=$($ALYCLI_PATH ecs DescribeVSwitches --RegionId $DROPLET_REGION_ID --ZoneId $DROPLET_ZONE_ID | $JQCLI_PATH '.VSwitches.VSwitch[0] | select(.Status == "Available")')
+sleep 3
+DROPLET_VSWITCH_QUERY=$($ALYCLI_PATH ecs DescribeVSwitches --RegionId $DROPLET_REGION_ID --ZoneId $DROPLET_ZONE_ID --VpcId $DROPLET_VPC_ID | $JQCLI_PATH '.VSwitches.VSwitch[0] | select(.Status == "Available")')
 DROPLET_VSWITCH_ID=""
 if [[ -z $DROPLET_VSWITCH_QUERY ]] || [ "$DROPLET_VSWITCH_QUERY" == "null" ]; then
     echo "$SHELL_LOG_PREFIX No available VSwitch in $DROPLET_ZONE_ID, begin to create VSwitch..."
 	if [[ $DROPLET_ZONE_ID == *a ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.16.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.0.0/20"
     elif [[ $DROPLET_ZONE_ID == *b ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.17.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.16.0/20"
     elif [[ $DROPLET_ZONE_ID == *c ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.18.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.32.0/20"
     elif [[ $DROPLET_ZONE_ID == *d ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.19.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.48.0/20"
     elif [[ $DROPLET_ZONE_ID == *e ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.20.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.64.0/20"
     elif [[ $DROPLET_ZONE_ID == *f ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.21.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.80.0/20"
     elif [[ $DROPLET_ZONE_ID == *g ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.22.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.96.0/20"
     elif [[ $DROPLET_ZONE_ID == *h ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.23.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.112.0/20"
     elif [[ $DROPLET_ZONE_ID == *i ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.24.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.128.0/20"
     elif [[ $DROPLET_ZONE_ID == *j ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.25.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.144.0/20"
     elif [[ $DROPLET_ZONE_ID == *k ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.26.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.160.0/20"
     elif [[ $DROPLET_ZONE_ID == *l ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.27.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.176.0/20"
     elif [[ $DROPLET_ZONE_ID == *m ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.28.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.192.0/20"
     elif [[ $DROPLET_ZONE_ID == *n ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.29.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.208.0/20"
     elif [[ $DROPLET_ZONE_ID == *o ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.30.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.224.0/20"
     elif [[ $DROPLET_ZONE_ID == *p ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.31.0.0/16"
-    elif [[ $DROPLET_ZONE_ID == *q ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.32.0.0/16"
-    elif [[ $DROPLET_ZONE_ID == *r ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.33.0.0/16"
-    elif [[ $DROPLET_ZONE_ID == *s ]]; then
-        DROPLET_VPC_SUB_CIDR_BLOCK="172.34.0.0/16"
+        DROPLET_VPC_SUB_CIDR_BLOCK="10.88.240.0/20"
     else
         echo "$SHELL_LOG_PREFIX Sorry, unknown zone, please contact taraxa devops..."
         exit 1
@@ -237,22 +289,25 @@ if [[ -z $DROPLET_VSWITCH_QUERY ]] || [ "$DROPLET_VSWITCH_QUERY" == "null" ]; th
 else
     DROPLET_VSWITCH_ID=$(echo $DROPLET_VSWITCH_QUERY | $JQCLI_PATH -r '.VSwitchId')
 fi
-echo "$SHELL_LOG_PREFIX We will use this VSwitch: $DROPLET_VSWITCH_ID"
+echo "$SHELL_LOG_PREFIX We will use this VSwitch in $DROPLET_ZONE_ID: $DROPLET_VSWITCH_ID"
 
 # random name suffix
 RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
 
 # Create Droplet
+sleep 3
 DROPLET_INSTANCE_CREATE=$(${ALYCLI_PATH} ecs CreateInstance \
     --InstanceName ${DROPLET_NAME} \
     --HostName ${DROPLET_NAME} \
     --ImageId ${DROPLET_IMAGE_ID} \
     --RegionId ${DROPLET_REGION_ID} \
+    --SecurityGroupId ${DROPLET_SG_ID} \
     --InstanceType $DROPLET_INSTANCE_TYPE_ID \
     --IoOptimized optimized \
     --VSwitchId $DROPLET_VSWITCH_ID \
-    --UserData ${DROPLET_USERDATA_SCRIPT})
+    --UserData ${DROPLET_USERDATA_SCRIPT} \
+    --KeyPairName ${DROPLET_KEY_PAIR_NAME})
 if [ $? != 0 ]; then
     echo "$SHELL_LOG_PREFIX CreateInstance Error: $DROPLET_INSTANCE_CREATE"
     echo "$SHELL_LOG_PREFIX failed to create instance, you can resolve uppon error, and try again..."
@@ -262,6 +317,7 @@ DROPLET_INSTANCE_ID=$(echo $DROPLET_INSTANCE_CREATE | $JQCLI_PATH -r '.InstanceI
 echo "$SHELL_LOG_PREFIX Create instance successful! instance id: $DROPLET_INSTANCE_ID"
 
 # Allocate Public IP
+sleep 1
 echo "$SHELL_LOG_PREFIX Query available eip address..."
 DROPLET_EIP_ADDRESS_QUERY=$($ALYCLI_PATH ecs DescribeEipAddresses --RegionId ${DROPLET_REGION_ID} --Status Available)
 if [ $? != 0 ]; then
@@ -277,13 +333,14 @@ if [[ -z $DROPLET_EIP_ADDRESS_ALLOCATION_ID ]] || [ "$DROPLET_EIP_ADDRESS_ALLOCA
     fi
     DROPLET_EIP_ADDRESS_ALLOCATION_ID=$(echo $DROPLET_EIP_ADDRESS_CREATE | $JQCLI_PATH -r '.AllocationId')
 fi
+sleep 1
 DROPLET_EIP_ADDRESS_ASSOCIATE=$($ALYCLI_PATH ecs AssociateEipAddress --RegionId $DROPLET_REGION_ID --AllocationId $DROPLET_EIP_ADDRESS_ALLOCATION_ID --InstanceId $DROPLET_INSTANCE_ID)
 if [ $? != 0 ]; then
 	echo "$SHELL_LOG_PREFIX AssociateEipAddress Error: $DROPLET_EIP_ADDRESS_ASSOCIATE"
 	exit 1
 fi
 
-# wait 3 minute, and try to start instance
+# wait 1 minute, and try to start instance
 echo "$SHELL_LOG_PREFIX try to start instance, it may need to wait 1 minutes..."
 for((i=1;i<=6;i++));
 do
@@ -293,7 +350,7 @@ do
         echo "$SHELL_LOG_PREFIX failed to start instance, try again..."
     else
         echo "$SHELL_LOG_PREFIX Congratulation! start instance successful!"
-        echo "$SHELL_LOG_PREFIX Recommend: you can connect ECS instance or send remote commands with Cloud Assistant."
+        echo "$SHELL_LOG_PREFIX Recommend: you can connect ECS instance via SSH or send remote commands with Cloud Assistant."
         break
     fi
 done
