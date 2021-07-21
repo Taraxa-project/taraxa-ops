@@ -34,7 +34,7 @@ EOM
 function install_manually_linux () {
     echo "Installing to $GOOGLE_CLOUD_INSTALL_PATH"
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${ARCH}.tar.gz
-    tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${ARCH}.tar.gz -C ${GOOGLE_CLOUD_INSTALL_PATH}
+    tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${ARCH}.tar.gz --strip-components=1 -C ${GOOGLE_CLOUD_INSTALL_PATH}
 }
 
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
@@ -117,8 +117,8 @@ if [ -z "$GC_CLI_INSTALLED" ]; then
 	fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
 	# Mac OSX
-	curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz
-	tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz -C ${GOOGLE_CLOUD_INSTALL_PATH}
+	//curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz
+	tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz --strip-components=1 -C ${GOOGLE_CLOUD_INSTALL_PATH}
 	GOOGLE_CLOUD_SDK_MANUAL_INSTALLATION=true
     else
 	echo "Your OS is currently not supported, sorry!"
@@ -127,7 +127,7 @@ if [ -z "$GC_CLI_INSTALLED" ]; then
 fi
 
 if [ "$GOOGLE_CLOUD_SDK_MANUAL_INSTALLATION" == "true" ]; then
-    GCLOUD_COMMAND=${GOOGLE_CLOUD_INSTALL_PATH}/gcloud
+    GCLOUD_COMMAND=${GOOGLE_CLOUD_INSTALL_PATH}/bin/gcloud
     else
 	GCLOUD_COMMAND=gcloud
 fi
@@ -140,10 +140,6 @@ if [ -z "$GC_CLI_INSTALLED" ]; then
   exit 1
 fi
 
-echo "DEBUG arch: $ARCH p2: $PYTHON_INSTALLED p3: $PYTHON3_INSTALLED cli: $GC_CLI_INSTALLED manual: $GOOGLE_CLOUD_SDK_MANUAL_INSTALLATION path: $GOOGLE_CLOUD_INSTALL_PATH project $GC_PROJECT_NAME"
-
-
-
 echo "-> A browser window will pop up. Please provide your Google Cloud account credentials to log in."
 echo "-> If you have not created a Google Cloud account, please do so now."
 
@@ -154,6 +150,12 @@ if [ $? != 0 ]; then
   echo "! Error logging in"
   exit 1
 fi
+
+echo "-> Updating components"
+
+${GCLOUD_COMMAND} config set disable_usage_reporting true
+${GCLOUD_COMMAND} components install beta --quiet
+${GCLOUD_COMMAND} components update --quiet
 
 echo "-> Creating a project $GC_PROJECT_NAME"
 
