@@ -65,9 +65,6 @@ cd ${TARAXA_ONE_CLICK_PATH}
 echo "Checking for Google Cloud SDK CLI..."
 GC_CLI_INSTALLED=$(gcloud version | grep 'Google Cloud SDK')
 
-echo "DEBUG arch: $ARCH p2: $PYTHON_INSTALLED p3: $PYTHON3_INSTALLED cli: $GC_CLI_INSTALLED manual: $GOOGLE_CLOUD_SDK_MANUAL_INSTALLATION path: $GOOGLE_CLOUD_INSTALL_PATH"
-
-
 if [ -z "$GC_CLI_INSTALLED" ]; then
     echo "Attempting to install Google Cloud SDK CLI"
     mkdir -p ${GOOGLE_CLOUD_INSTALL_PATH}
