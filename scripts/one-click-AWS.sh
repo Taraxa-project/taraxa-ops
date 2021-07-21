@@ -15,6 +15,24 @@ export AWS_DEFAULT_REGION=us-east-1
 mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
 
+function check_deps() {
+    if ! [ -x "$(command -v jq)" -a -x "$(command -v unzip)" ]; then
+        echo $SHELL_LOG_PREFIX installing depencies
+        if [ -x "$(command -v apt-get)" ]; then
+            sudo apt-get install -y unzip jq
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum install jq unzip
+        elif [ -x "$(command -v brew)" ]; then
+            # skip for unzip on mac
+            brew install jq
+        else
+            echo "$SHELL_LOG_PREFIX Error! You should install jq and unzip on your system"
+            exit 1
+        fi
+    fi
+}
+
+check_deps
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 if [ "$OS" == "darwin" ]; then
