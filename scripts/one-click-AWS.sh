@@ -1,14 +1,10 @@
 #!/bin/bash
 SHELL_LOG_PREFIX='[taraxa-oneclick-aws]'
 
-TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
-AWS_PATH=${TARAXA_ONE_CLICK_PATH}/aws/bin/aws
-
 BASE_NAME=taraxa-node-oneclick
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick-aws
+AWS_PATH=${TARAXA_ONE_CLICK_PATH}/aws/bin/aws
 USERDATA_SCRIPT=${TARAXA_ONE_CLICK_PATH}/bootstrap-userdata.sh
-# Ubuntu Server 20.04 LTS 64bit (with docker)
-AWS_IMAGE_AMI='ami-04333e8b5bf7dfc81'
 # SSH KEY to connect to crated instance
 AWS_KEY_NAME="taraxa-node-keypair"
 # t2.xlarge - 4 CPU + 16 GB RAM + EBS SSD
@@ -39,9 +35,13 @@ elif [ "$OS" == "linux" ]; then
         *) echo "$SHELL_LOG_PREFIX sorry, the script is not suitable for your ARCH $ARCH."
            exit 2 ;;
     esac
-    curl -fsSL "https://awscli.amazonaws.com/awscli-exe-${OS}-${ARCH}.zip" -o awscli2.zip
-    unzip awscli2.zip
-    $TARAXA_ONE_CLICK_PATH/aws/install -i $TARAXA_ONE_CLICK_PATH/aws/installed $TARAXA_ONE_CLICK_PATH/aws/bin
+    if ! [ -x $AWS_PATH ]; then
+        curl -fsSL "https://awscli.amazonaws.com/awscli-exe-${OS}-${ARCH}.zip" -o awscli2.zip
+        unzip awscli2.zip
+        $TARAXA_ONE_CLICK_PATH/aws/install -i $TARAXA_ONE_CLICK_PATH/aws/installed -b $TARAXA_ONE_CLICK_PATH/aws/bin
+    else
+        echo $SHELL_LOG_PREFIX aws cli already installed
+    fi
 else
     echo "$SHELL_LOG_PREFIX sorry, the script is not suitable for your operating system."
     exit 1
@@ -117,7 +117,7 @@ echo -n $SHELL_LOG_PREFIX Node creation request is approved, waiting 20 seconds 
 for i in `seq 1 20`; do echo -n '.'; sleep 1; done
 echo
 
-PUBLIC_IP=$(aws ec2 describe-instances --filter "Name=instance-id,Values=$INSTANCE_ID" --output json | \
+PUBLIC_IP=$($AWS_PATH ec2 describe-instances --filter "Name=instance-id,Values=$INSTANCE_ID" --output json | \
 jq ".Reservations[0].Instances[0].PublicIpAddress" | sed 's/"//g')
 
 echo $SHELL_LOG_PREFIX Node $INSTANCE_ID is created in $AWS_DEFAULT_REGION region with public IP $PUBLIC_IP
