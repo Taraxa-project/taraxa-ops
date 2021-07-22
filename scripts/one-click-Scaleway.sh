@@ -30,7 +30,7 @@ esac
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 if [ "$OS" == "darwin" ]; then
     OS="darwin"
-    if ["$ARCH" != "arm64"] && [ "$ARCH" != "x86_64" ]; then
+    if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "x86_64" ]; then
         echo "$SHELL_LOG_PREFIX sorry, scaleway cli doesn't support your $OS $ARCH."
         exit 1
     fi
