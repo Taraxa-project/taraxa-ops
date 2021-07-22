@@ -38,7 +38,7 @@ function install_manually_linux () {
 }
 
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
-STARTUP_SCRIPT=${TARAXA_ONE_CLICK_PATH}/startup-script.sh
+STARTUP_SCRIPT=https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh
 
 # TODO 
 NODE_SKU=e2-standard-4 # 4 core, 16gb ram 
@@ -154,27 +154,57 @@ ${GCLOUD_COMMAND} config set disable_usage_reporting true
 ${GCLOUD_COMMAND} components install beta --quiet
 ${GCLOUD_COMMAND} components update --quiet
 
-echo "-> Creating a project $GC_PROJECT_NAME"
+if [ -z "$USE_PROJECT_ID" ]; then
+    echo "-> Checking if a project exists"
 
-${GCLOUD_COMMAND} projects create ${GC_PROJECT_NAME}
+    PROJECTS=$(${GCLOUD_COMMAND} projects list | tail --lines=+2)
 
-if [ $? != 0 ]; then 
-  echo "! Error creating project"
-  exit 1
+    echo "$PROJECTS"
+
+    # empty so no projects
+    if [ -z "$PROJECTS" ]; then
+	echo "-> Creating a project $GC_PROJECT_NAME"
+
+	${GCLOUD_COMMAND} projects create ${GC_PROJECT_NAME}
+
+	if [ $? != 0 ]; then 
+	    echo "! Error creating project"
+	    exit 1
+	fi
+
+	${GCLOUD_COMMAND} config set project ${GC_PROJECT_NAME}
+
+	echo "-> Linking the project to a billing account"
+
+	BILLING_ACCOUNT=$(${GCLOUD_COMMAND} beta billing accounts list | egrep '(([A-Fa-z0-9]){6}-){2}([A-Fa-z0-9]){6}' | awk '{print substr($0, 0, 20)}')
+
+	if [ $? != 0 ]; then 
+	    echo "!! Error finding a billing account, make sure you've set up one at cloud.google.com"
+	    exit 1
+	fi
+
+	${GCLOUD_COMMAND} beta billing projects link ${GC_PROJECT_NAME} --billing-account ${BILLING_ACCOUNT}
+	
+    else
+	# let's use a project if we have one
+	echo "-> A project found "
+
+	GC_PROJECT_NAME=$(gcloud projects list | awk 'NR==2{print $1}')
+
+	echo "-> $GC_PROJECT_NAME"
+	
+	# check for billing enabled..
+	HAS_BILLING=$(${GCLOUD_COMMAND} beta billing projects describe ${GC_PROJECT_NAME} | grep 'billingEnabled: true')
+	if [ -z "$HAS_BILLING" ]; then 
+	    echo "!! Project $GC_PROJECT_NAME does not have billing enabled"
+	    exit 1
+	fi
+    fi
+else
+    echo "-> Using env defined project with id $USE_PROJECT_ID"
+    GC_PROJECT_NAME=${USE_PROJECT_ID}
+    ${GCLOUD_COMMAND} config set project ${GC_PROJECT_NAME}
 fi
-
-${GCLOUD_COMMAND} config set project ${GC_PROJECT_NAME}
-
-echo "-> Linking the project to a billing account"
-
-BILLING_ACCOUNT=$(${GCLOUD_COMMAND} beta billing accounts list | egrep '(([A-Fa-z0-9]){6}-){2}([A-Fa-z0-9]){6}' | awk '{print substr($0, 0, 20)}')
-
-if [ $? != 0 ]; then 
-  echo "!! Error finding a billing account, make sure you've set up one at cloud.google.com"
-  exit 1
-fi
-
-${GCLOUD_COMMAND} beta billing projects link ${GC_PROJECT_NAME} --billing-account ${BILLING_ACCOUNT}
 
 echo "-> Enabling Compute Engine"
 
@@ -200,8 +230,6 @@ echo "-> Zone selected $GC_ZONE"
 ${GCLOUD_COMMAND} config set compute/region ${GC_REGION}
 ${GCLOUD_COMMAND} config set compute/zone ${GC_ZONE}
 
-curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${STARTUP_SCRIPT}
-
 echo "-> Creating a Compute Engine"
 
 echo "-> Setting up Firewall"
@@ -224,7 +252,7 @@ ${GCLOUD_COMMAND} compute instances create ${GC_COMPUTE_ENGINE} \
        --image-project ubuntu-os-cloud \
        --image-family ubuntu-2004-lts \
        --zone ${GC_ZONE} \
-       --metadata-from-file=startup-script=${STARTUP_SCRIPT} \
+       --metadata=startup-script-url=${STARTUP_SCRIPT} \
        --project ${GC_PROJECT_NAME}
        
 if [ $? != 0 ]; then 
