@@ -114,7 +114,7 @@ if [ -z "$GC_CLI_INSTALLED" ]; then
 	fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
 	# Mac OSX
-	//curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz
+	curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz
 	tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-darwin-${ARCH}.tar.gz --strip-components=1 -C ${GOOGLE_CLOUD_INSTALL_PATH}
 	GOOGLE_CLOUD_SDK_MANUAL_INSTALLATION=true
     else
