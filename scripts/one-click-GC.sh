@@ -291,6 +291,6 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-echo "Complete! To login use gcloud compute ssh ${GC_COMPUTE_ENGINE} and generate your keys and run sudo docker ps to make sure your node is up and running"
+echo "Complete! To login use ${GCLOUD_COMMAND} compute ssh ${GC_COMPUTE_ENGINE} and generate your keys and run sudo docker ps to make sure your node is up and running"
 echo "Note! It might take a while for the node to start"
 echo "Afterwards you can use either above or ssh -i ~/.ssh/google_compute_engine <your-nodes-ip> to login"
