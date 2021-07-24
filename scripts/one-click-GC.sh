@@ -157,7 +157,7 @@ ${GCLOUD_COMMAND} components update --quiet
 if [ -z "$USE_PROJECT_ID" ]; then
     echo "-> Checking if a project exists"
 
-    PROJECTS=$(${GCLOUD_COMMAND} projects list | tail --lines=+2)
+    PROJECTS=$(${GCLOUD_COMMAND} projects list | tail -n +2)
 
     echo "$PROJECTS"
 
@@ -189,7 +189,7 @@ if [ -z "$USE_PROJECT_ID" ]; then
 	# let's use a project if we have one
 	echo "-> A project found "
 
-	GC_PROJECT_NAME=$(gcloud projects list | awk 'NR==2{print $1}')
+	GC_PROJECT_NAME=$(${GCLOUD_COMMAND} projects list | awk 'NR==2{print $1}')
 
 	echo "-> $GC_PROJECT_NAME"
 	
@@ -197,7 +197,25 @@ if [ -z "$USE_PROJECT_ID" ]; then
 	HAS_BILLING=$(${GCLOUD_COMMAND} beta billing projects describe ${GC_PROJECT_NAME} | grep 'billingEnabled: true')
 	if [ -z "$HAS_BILLING" ]; then 
 	    echo "!! Project $GC_PROJECT_NAME does not have billing enabled"
-	    exit 1
+	    echo "-> Attempting to enable billing"
+
+	    BILLING_ACCOUNT=$(${GCLOUD_COMMAND} beta billing accounts list | egrep '(([A-Fa-z0-9]){6}-){2}([A-Fa-z0-9]){6}' | awk '{print substr($0, 0, 20)}')
+
+	    if [ $? != 0 ]; then 
+		echo "!! Billing account not found.  If you wish to use another project with billing enabled, you can define an env variable USE_PROJECT_ID with the project id, or use console.cloud.google.com to set up a billing account."
+		echo "-> 'export USE_PROJECT_ID=<project id>'"
+		echo "Find id via $GCLOUD_COMMAND projects list"
+		${GCLOUD_COMMAND} projects list
+		exit 1
+	    fi
+
+	    ${GCLOUD_COMMAND} beta billing projects link ${GC_PROJECT_NAME} --billing-account ${BILLING_ACCOUNT}
+ 	    if [ $? != 0 ]; then 
+		echo "!! Linking failed.  If you wish to use another project with billing enabled, you can define an env variable USE_PROJECT_ID with the project id."
+		echo "-> 'export USE_PROJECT_ID=<project id>'"
+		echo "Find id via $GCLOUD_COMMAND projects list"
+		exit 1
+	    fi    
 	fi
     fi
 else
@@ -205,6 +223,8 @@ else
     GC_PROJECT_NAME=${USE_PROJECT_ID}
     ${GCLOUD_COMMAND} config set project ${GC_PROJECT_NAME}
 fi
+
+echo "DEBUG $GCLOUD_COMMAND $GC_PROJECT_NAME"
 
 echo "-> Enabling Compute Engine"
 
