@@ -217,6 +217,8 @@ if [ -z "$USE_PROJECT_ID" ]; then
 		exit 1
 	    fi    
 	fi
+
+	${GCLOUD_COMMAND} config set project ${GC_PROJECT_NAME}
     fi
 else
     echo "-> Using env defined project with id $USE_PROJECT_ID"
