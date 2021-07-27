@@ -20,7 +20,7 @@ function detect_distro() {
         distro="termux"
     fi
     if [ -z "$distro" ]; then
-        distro=$(ls /etc | awk 'match($0, "(.+?)[-_](?:release|version)", groups) {if(groups[1] != "os") {print groups[1]}}') 2> /dev/null
+        distro=$(ls /etc | awk 'match($0, "(.+?)[-_](?:release|version)", groups) {if(groups[1] != "os") {print groups[1]}}' 2> /dev/null)
     fi
     if [ -z "$distro" ]; then
         if [ -f "/etc/os-release" ]; then
