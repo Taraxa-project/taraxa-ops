@@ -127,6 +127,22 @@ else
     echo "$SHELL_LOG_PREFIX Found python!"
 fi
 
+# Check pip
+echo "$SHELL_LOG_PREFIX begin to check pip..."
+sleep 1
+if ! [ -x "$(command -v pip)" ]; then
+    echo "$SHELL_LOG_PREFIX Not found pip, begin to install pip..."
+    packages=($PYTHON-pip)
+    install_deps
+    if [ -x "$(command -v linode-cli)" ]; then
+        echo "$SHELL_LOG_PREFIX Found linode cli, usually, this is problematic. begin to uninstall linode cli..."
+        sleep 3
+        $PIP uninstall -y linode-cli
+    fi
+else
+    echo "$SHELL_LOG_PREFIX Found pip!"
+fi
+
 # Check linode cli
 echo "$SHELL_LOG_PREFIX begin to check linode cli..."
 sleep 3
