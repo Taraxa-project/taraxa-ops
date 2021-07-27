@@ -35,20 +35,38 @@ function detect_distro() {
 }
 
 function init_environ(){
-    declare -a backends; backends=(
-        ["arch"]="pacman -S --noconfirm"
-        ["debian"]="apt-get -y install"
-        ["ubuntu"]="apt -y install"
-        ["termux"]="apt -y install"
-        ["fedora"]="yum -y install"
-        ["redhat"]="yum -y install"
-        ["SuSE"]="zypper -n install"
-        ["sles"]="zypper -n install"
-        ["darwin"]="brew install"
-        ["alpine"]="apk add"
+    declare -a systems; systems=(
+        arch
+        debian
+        ubuntu
+        termux
+        fedora
+        redhat
+        SuSE
+        sles
+        darwin
+        alpine
     )
+    for ((i=0;i<${#systems[*]};i++))
+    do
+        if [[ ${systems[$i]} == $distro ]];then
+            INDEX=$i
+        fi
+    done
 
-    INSTALL="${backends[$distro]}"
+    declare -a backends; backends=(
+        "pacman -S --noconfirm"
+        "apt-get -y install"
+        "apt -y install"
+        "apt -y install"
+        "yum -y install"
+        "yum -y install"
+        "zypper -n install"
+        "zypper -n install"
+        "brew install"
+        "apk add"
+    )
+    INSTALL="${backends[$INDEX]}"
 
     if [ "$distro" == "termux" ]; then
         PYTHON="python"
