@@ -16,16 +16,16 @@ mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
 
 function detect_distro() {
-    if [[ "$OSTYPE" == linux-android* ]]; then
+    if [[ $OSTYPE == linux-android* ]]; then
         distro="termux"
     fi
     if [ -z "$distro" ]; then
-        distro=$(ls /etc | awk 'match($0, "(.+?)[-_](?:release|version)", groups) {if(groups[1] != "os") {print groups[1]}}')
+        distro=$(ls /etc | awk 'match($0, "(.+?)[-_](?:release|version)", groups) {if(groups[1] != "os") {print groups[1]}}') 2> /dev/null
     fi
     if [ -z "$distro" ]; then
         if [ -f "/etc/os-release" ]; then
             distro="$(source /etc/os-release && echo $ID)"
-        elif [ "$OSTYPE" == "darwin" ]; then
+        elif [[ $OSTYPE == darwin* ]]; then
             distro="darwin"
         else 
             distro="invalid"
@@ -35,7 +35,7 @@ function detect_distro() {
 }
 
 function init_environ(){
-    declare -A backends; backends=(
+    declare -a backends; backends=(
         ["arch"]="pacman -S --noconfirm"
         ["debian"]="apt-get -y install"
         ["ubuntu"]="apt -y install"
@@ -58,6 +58,7 @@ function init_environ(){
         SUDO="sudo"
     fi
     PIP="$PYTHON -m pip"
+    echo "$SHELL_LOG_PREFIX install command: $INSTALL, pip command: $PIP"
 }
 
 function install_deps(){
