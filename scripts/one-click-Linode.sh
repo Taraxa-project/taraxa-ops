@@ -75,7 +75,7 @@ function init_environ(){
         PYTHON="python3"
         SUDO="sudo"
     fi
-    PIP="$PYTHON -m pip"
+    PIP="pip"
     echo "$SHELL_LOG_PREFIX install command: $INSTALL, pip command: $PIP"
 }
 
@@ -86,7 +86,7 @@ function install_deps(){
         done
     else
         echo "$SHELL_LOG_PREFIX We could not install dependencies."
-        echo "$SHELL_LOG_PREFIX Please make sure you have python3, pip3 and linode-cli installed."
+        echo "$SHELL_LOG_PREFIX Please make sure you have python3, pip(or pip3) and linode-cli installed."
         exit
     fi
 }
@@ -127,11 +127,17 @@ else
     echo "$SHELL_LOG_PREFIX Found python!"
 fi
 
-# Check pip
-echo "$SHELL_LOG_PREFIX begin to check pip..."
+# Check pip or pip3
+echo "$SHELL_LOG_PREFIX begin to check pip env..."
 sleep 1
-if ! [ -x "$(command -v pip)" ]; then
-    echo "$SHELL_LOG_PREFIX Not found pip, begin to install pip..."
+if [ -x "$(command -v pip3)" ]; then
+    echo "$SHELL_LOG_PREFIX Found pip3!"
+	PIP="pip3"
+elif [ -x "$(command -v pip)" ]; then
+    echo "$SHELL_LOG_PREFIX Found pip!"
+	PIP="pip"
+else
+    echo "$SHELL_LOG_PREFIX Not found pip or pip3, begin to install pip..."
     packages=($PYTHON-pip)
     install_deps
     if [ -x "$(command -v linode-cli)" ]; then
@@ -139,8 +145,6 @@ if ! [ -x "$(command -v pip)" ]; then
         sleep 3
         $PIP uninstall -y linode-cli
     fi
-else
-    echo "$SHELL_LOG_PREFIX Found pip!"
 fi
 
 # Check linode cli
