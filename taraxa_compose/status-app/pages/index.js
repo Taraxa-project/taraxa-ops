@@ -7,6 +7,7 @@ export default function Home() {
   const [copy, setCopy] = useState("Copy");
   const [isSynced, setIsSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [dposNodeVotes, setDposNodeVotes] = useState(0);
   const [peerPbftBlockCount, setPeerPbftBlockCount] = useState(0);
   const [pbftBlocks, setPbftBlocks] = useState(0);
   const [dagBlocks, setDagBlocks] = useState(0);
@@ -27,7 +28,8 @@ export default function Home() {
           return;
         }
         const status = response.data;
-        setIsSynced(status?.network?.synced === 1);
+        setIsSynced(status?.synced);
+        setDposNodeVotes(status?.dpos_node_votes);
         setPbftBlocks(status?.pbft_size);
         setDagBlocks(status?.blk_executed);
         setTransactions(status?.trx_executed);
@@ -103,6 +105,9 @@ export default function Home() {
 
   if (isSynced) {
     status = "SYNCED";
+    if (dposNodeVotes > 0) {
+      status += " - PARTICIPATING IN CONSENSUS";
+    }
   } else {
     status = "NOT SYNCED";
 
