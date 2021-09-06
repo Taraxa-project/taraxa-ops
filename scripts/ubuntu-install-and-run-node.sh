@@ -3,8 +3,6 @@
 # Basic script to prepare a Ubuntu machine to run Taraxa Node using docker.
 # This is initial developed to be used as startup script for cloud virtual machines to help new users to get a node running.
 
-TARAXA_NODE_PATH=/var/taraxa
-
 # Install Docker
 wget -O get-docker.sh https://get.docker.com
 sudo sh get-docker.sh

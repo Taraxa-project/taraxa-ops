@@ -14,8 +14,8 @@ from eth_utils.curried import keccak
 DROPLET_BASE_NAME = "taraxa-node-oneclick"
 DROPLET_SIZE = "c-4"
 DROPLET_IMAGE = "ubuntu-20-04-x64"
-DROPLET_USER_DATA_SCRIPT = "https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh"
-
+DROPLET_USER_DATA_SCRIPT = "https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/do-bulk/install-and-run-node.sh"
+VOLUME_SIZE = 250
 
 @click.group()
 def cli():
@@ -44,10 +44,19 @@ def create(nodes, project=None, explorer_key=None):
     for i in range(0, nodes):
         name = ''.join(random.choice(string.ascii_letters) for x in range(6))
         region = random.choice(regions)
+
+        volume_name = name.lower()
+        volume = digitalocean.Volume(name=f'oneclick{volume_name}',
+                                      region=region,
+                                      size_gigabytes=VOLUME_SIZE)
+        volume.create()
+        volume.load()
+
         droplet = digitalocean.Droplet(name=f'{DROPLET_BASE_NAME}-{name}',
                                        region=region,
                                        image=DROPLET_IMAGE,
                                        size_slug=DROPLET_SIZE,
+                                       volumes=[volume.id],
                                        user_data=user_data,
                                        backups=False)
         droplet.create()
@@ -132,15 +141,36 @@ def delete(project):
 
         droplets.append(droplet)
 
-    if len(droplets) == 0:
+    if len(droplets) != 0:
+        click.echo(f"Deleting droplets in {project.name}...")
+        click.echo("{:<10} {:<30}".format('Id', 'Name'))
+        for droplet in droplets:
+            click.echo("{:<10} {:<30}".format(droplet.id, droplet.name))
+            droplet.destroy()
+    else:
         click.echo(f'No droplets found.')
-        quit(1)
 
-    click.echo(f"Deleting droplets in {project.name}...")
-    click.echo("{:<10} {:<30}".format('Id', 'Name'))
-    for droplet in droplets:
-        click.echo("{:<10} {:<30}".format(droplet.id, droplet.name))
-        droplet.destroy()
+    volumes = []
+    for resource in resources:
+        if "do:volume:" not in resource:
+            continue
+
+        volume_id = resource.replace("do:volume:", "")
+        volume = manager.get_volume(volume_id)
+
+        if "oneclick" not in volume.name:
+            continue
+
+        volumes.append(volume)
+
+    if len(volumes) != 0:
+        click.echo(f"Deleting volumes in {project.name}...")
+        click.echo("{:<40} {:<30}".format('Id', 'Name'))
+        for volume in volumes:
+            click.echo("{:<40} {:<30}".format(volume.id, volume.name))
+            volume.destroy()
+    else:
+        click.echo(f'No volumes found.')
 
 
 def get_manager():
