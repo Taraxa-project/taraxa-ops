@@ -7,6 +7,7 @@ DROPLET_USERDATA_SCRIPT=${TARAXA_ONE_CLICK_PATH}/bootstrap-userdata.sh
 DROPLET_SIZE=c-4
 DROPLET_BASE_NAME=taraxa-node-oneclick
 DROPLET_IMAGE=ubuntu-20-04-x64
+DROPLET_VOLUME_SIZE=250GiB
 
 mkdir -p ${TARAXA_ONE_CLICK_PATH}
 cd ${TARAXA_ONE_CLICK_PATH}
@@ -36,6 +37,11 @@ DROPLET_REGION=${REGIONS[$RANDOM % ${#REGIONS[@]}]}
 
 RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
+
+# Create Volume
+${DOCTL_PATH} compute droplet create ${DROPLET_NAME} \
+    --region ${DROPLET_REGION} \
+    --size $DROPLET_VOLUME_SIZE \
 
 # Create Droplet
 ${DOCTL_PATH} compute droplet create ${DROPLET_NAME} \

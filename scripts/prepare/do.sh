@@ -11,4 +11,3 @@ echo "/dev/disk/by-id/${VOLUME} /var/lib/docker ext4 defaults,nofail,discard 0 0
 wget -O ubuntu-install-and-run-node.sh https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh
 sudo sh ubuntu-install-and-run-node.sh
 rm -f ubuntu-install-and-run-node.sh
-
