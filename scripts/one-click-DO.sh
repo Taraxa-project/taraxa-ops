@@ -29,7 +29,7 @@ if [ "$RETURN" != 0 ]; then
 fi
 
 # Get current bootstrap script
-curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${DROPLET_USERDATA_SCRIPT}
+curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/prepare/do.sh --output ${DROPLET_USERDATA_SCRIPT}
 
 # Get random Zone
 REGIONS=($($DOCTL_PATH compute region list | grep true | awk '{ print $1}'))
@@ -41,12 +41,15 @@ DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
 # Create Volume
 ${DOCTL_PATH} compute volume create ${DROPLET_NAME} \
     --region ${DROPLET_REGION} \
-    --size $DROPLET_VOLUME_SIZE \
+    --size $DROPLET_VOLUME_SIZE
+
+VOLUME_ID=($($DOCTL_PATH compute volume list | grep $DROPLET_NAME | awk '{print $1}'))
 
 # Create Droplet
 ${DOCTL_PATH} compute droplet create ${DROPLET_NAME} \
     --image ${DROPLET_IMAGE} \
     --region ${DROPLET_REGION} \
     --size $DROPLET_SIZE \
+    --volumes ${VOLUME_ID} \
     --user-data-file ${DROPLET_USERDATA_SCRIPT}
 
