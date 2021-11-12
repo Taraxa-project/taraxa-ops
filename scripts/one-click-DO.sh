@@ -39,7 +39,7 @@ RND_STR=$(head /dev/urandom | LC_CTYPE=C tr -dc a-z0-9 | head -c 4 ; echo '')
 DROPLET_NAME=${DROPLET_BASE_NAME}-$RND_STR
 
 # Create Volume
-${DOCTL_PATH} compute droplet create ${DROPLET_NAME} \
+${DOCTL_PATH} compute volume create ${DROPLET_NAME} \
     --region ${DROPLET_REGION} \
     --size $DROPLET_VOLUME_SIZE \
 
