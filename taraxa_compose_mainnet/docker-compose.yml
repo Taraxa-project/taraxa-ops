@@ -1,0 +1,28 @@
+version: "3"
+services:
+  node:
+    image: taraxa/taraxa-node:v1.0.0-candidate
+    restart: always
+    ports:
+      - "10002:10002"
+      - "10002:10002/udp"
+      - "7777:7777"
+      - "8777:8777"
+    entrypoint: /usr/bin/sh
+    command: >
+      -c "mkdir -p /opt/taraxa_data/data &&
+          taraxad --network-id 1 --wallet /opt/taraxa_data/conf/wallet.json --config /opt/taraxa_data/conf/mainnet.json --data-dir /opt/taraxa_data/data --overwrite-config"
+    volumes:
+      - ./config:/opt/taraxa_data/conf
+      - data:/opt/taraxa_data/data
+  status-app:
+    image: taraxa/taraxa-node-status:latest
+    environment:
+      - NEXT_PUBLIC_RPC=http://node:7777
+    restart: always
+    depends_on:
+      - node
+    ports:
+      - "3000:3000"
+volumes:
+  data:
