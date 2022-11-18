@@ -11,7 +11,7 @@ services:
     entrypoint: /usr/bin/sh
     command: >
       -c "mkdir -p /opt/taraxa_data/data &&
-          taraxad --chain mainnet --wallet /opt/taraxa_data/conf/wallet.json --config /opt/taraxa_data/conf/mainnet.json --data-dir /opt/taraxa_data/data --overwrite-config"
+          taraxad --chain mainnet --wallet /opt/taraxa_data/conf/wallet.json --config /opt/taraxa_data/conf/mainnet.json --data-dir /opt/taraxa_data/data --overwrite-config --enable-test-rpc"
     volumes:
       - ./config:/opt/taraxa_data/conf
       - data:/opt/taraxa_data/data
