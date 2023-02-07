@@ -1,7 +1,7 @@
 version: "3"
 services:
   node:
-    image: taraxa/taraxa-node:testnet-9264
+    image: taraxa/taraxa-node:testnet-9374
     restart: always
     ports:
       - "10002:10002"
