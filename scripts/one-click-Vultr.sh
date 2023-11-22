@@ -1,5 +1,15 @@
 #!/bin/bash
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 SHELL_LOG_PREFIX='[oneclick-vultr]'
 
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
@@ -56,13 +66,20 @@ else
 fi
 
 # base64 script
+
+DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}")
+
+DROPLET_USERDATA_SCRIPT=${DROPLET_USERDATA_SCRIPT_CONTENT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+
 echo | base64 -w0 > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+if [ $? == 0 ]; then
     # GNU coreutils base64, '-w' supported
-    DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}" | base64 -w 0)
+    DROPLET_USERDATA_SCRIPT=$(echo "${DROPLET_USERDATA_SCRIPT}" | base64 -w 0)
 else
-    DROPLET_USERDATA_SCRIPT=$(cat "${DROPLET_USERDATA_SCRIPT}" | base64)
+    DROPLET_USERDATA_SCRIPT=$(echo "${DROPLET_USERDATA_SCRIPT}" | base64)
 fi
+echo "$SHELL_LOG_PREFIX script: $DROPLET_USERDATA_SCRIPT"
+
 
 # Get Plan
 echo "$SHELL_LOG_PREFIX begin to get plans list..."

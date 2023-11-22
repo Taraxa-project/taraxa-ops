@@ -1,5 +1,15 @@
 #!/bin/bash
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
 DOCTL_PATH=${TARAXA_ONE_CLICK_PATH}/doctl
 DOCTL_VERSION=1.59.0
@@ -30,6 +40,11 @@ fi
 
 # Get current bootstrap script
 curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/prepare/do.sh --output ${DROPLET_USERDATA_SCRIPT}
+
+# Set the node type in the ubuntu install script
+DROPLET_USERDATA_SCRIPT_CONTENT=$(cat "$DROPLET_USERDATA_SCRIPT")
+DROPLET_USERDATA_SCRIPT_CONTENT=${DROPLET_USERDATA_SCRIPT_CONTENT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+echo "$DROPLET_USERDATA_SCRIPT_CONTENT" > $DROPLET_USERDATA_SCRIPT
 
 # Get random Zone
 REGIONS=($($DOCTL_PATH compute region list | grep true | awk '{ print $1}'))
