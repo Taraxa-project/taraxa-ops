@@ -138,7 +138,7 @@ DROPLET_USERDATA_SCRIPT=$(cat << EOF
 runcmd:
    - mkdir /taraxa-oneclick
    - curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output /taraxa-oneclick/bootstrap-userdata.sh
-   - sed -i -e 's/REPLACEWITHNODETYPE/$NODETYPE/g' /taraxa-oneclick/bootstrap-userdata.sh
+   - sed -i -e 's/REPLACEWITHNODETYPE/${NODETYPE}/g' /taraxa-oneclick/bootstrap-userdata.sh
    - chmod 755 /taraxa-oneclick/bootstrap-userdata.sh
    - /taraxa-oneclick/bootstrap-userdata.sh
 EOF
