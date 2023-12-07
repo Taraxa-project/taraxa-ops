@@ -20,6 +20,16 @@ function install_azurecli () {
   fi
 }
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
 NODE_SKU=F4 # 4 core, 8gb ram
 NODE_BASE_NAME=taraxa-node-az-oneclick
@@ -155,7 +165,7 @@ az vm extension set \
   --resource-group ${AZ_GROUP_NAME} \
   --vm-name ${AZ_APP_SERVICE_NAME} --name customScript \
   --publisher Microsoft.Azure.Extensions \
-  --protected-settings '{"fileUris": ["https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh"],"commandToExecute": "./ubuntu-install-and-run-node.sh"}' > /dev/null
+  --protected-settings '{"fileUris": ["https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh"],"commandToExecute": "sed -i -e 's/REPLACEWITHNODETYPE/$NODETYPE/g' ./ubuntu-install-and-run-node.sh && ./ubuntu-install-and-run-node.sh"}' > /dev/null
 
 if [ $? != 0 ]; then 
   echo "Error creating VM"

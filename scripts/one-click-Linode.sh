@@ -1,5 +1,15 @@
 #!/bin/bash
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 SHELL_LOG_PREFIX='[oneclick-linode]'
 
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
@@ -186,6 +196,10 @@ echo "$SHELL_LOG_PREFIX Select random region: $DROPLET_REGION_ID"
 
 # Upload stackscript
 download_bootstrap_script
+
+# Set the node type in the ubuntu install script
+DROPLET_USERDATA_SCRIPT=${DROPLET_USERDATA_SCRIPT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+
 DROPLET_SCRIPT_LIST=$(linode-cli stackscripts list --mine true --label "$DROPLET_SCRIPT_NAME" --json --pretty | jq '.[0]')
 if [[ -z $DROPLET_SCRIPT_LIST ]] || [ "$DROPLET_SCRIPT_LIST" == 'null' ]; then
     echo "$SHELL_LOG_PREFIX begin to create stackscript..."

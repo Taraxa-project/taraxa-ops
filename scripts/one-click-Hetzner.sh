@@ -1,5 +1,15 @@
 #!/bin/bash
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 SHELL_LOG_PREFIX='[taraxa-oneclick-hetzner]'
 
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
@@ -76,6 +86,11 @@ if [ $? != 0 ]; then
 else
     echo "$SHELL_LOG_PREFIX download bootstrap script success!"
 fi
+
+HCLOUD_USERDATA_SCRIPT_CONTENT=$(cat "$HCLOUD_USERDATA_SCRIPT")
+HCLOUD_USERDATA_SCRIPT_CONTENT=${HCLOUD_USERDATA_SCRIPT_CONTENT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+echo "$HCLOUD_USERDATA_SCRIPT_CONTENT" > $HCLOUD_USERDATA_SCRIPT
+
 
 # Get Location
 echo -n "$SHELL_LOG_PREFIX select random location... "

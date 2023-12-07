@@ -1,4 +1,15 @@
 #!/bin/bash
+
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
 SHELL_LOG_PREFIX='[taraxa-oneclick-aws]'
 
 BASE_NAME=taraxa-node-oneclick
@@ -89,6 +100,12 @@ if [ $? != 0 ]; then
 else
     echo "$SHELL_LOG_PREFIX download bootstrap script success!"
 fi
+
+# Set the node type in the ubuntu install script
+SCRIPT_CONTENT=$(cat "${USERDATA_SCRIPT}")
+SCRIPT_CONTENT=${SCRIPT_CONTENT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+echo "$SCRIPT_CONTENT" > ${USERDATA_SCRIPT}
+
 
 # Setting random region
 REGIONS=($($AWS_PATH ec2 describe-regions --output json \

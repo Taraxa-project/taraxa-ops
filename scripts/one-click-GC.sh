@@ -37,8 +37,35 @@ function install_manually_linux () {
     tar -xvzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${ARCH}.tar.gz --strip-components=1 -C ${GOOGLE_CLOUD_INSTALL_PATH}
 }
 
+NODETYPE="testnet"
+
+if [[ "$0" == "mainnet" || "$1" == "mainnet" || "$2" == "mainnet" ]]; then
+    NODETYPE="mainnet"
+fi
+
+if [[ "$0" == "light" || "$1" == "light" || "$2" == "light" ]]; then
+    NODETYPE+="-light"
+fi
+
+SHELL_LOG_PREFIX='[taraxa-oneclick-gc]'
+
 TARAXA_ONE_CLICK_PATH=${HOME}/taraxa-node-oneclick
 STARTUP_SCRIPT=https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh
+
+
+# Get current bootstrap script
+curl -fsSL https://raw.githubusercontent.com/Taraxa-project/taraxa-ops/master/scripts/ubuntu-install-and-run-node.sh --output ${STARTUP_SCRIPT}
+if [ $? != 0 ]; then
+    echo "$SHELL_LOG_PREFIX download bootstrap script failed! You can try again."
+    exit 1
+else
+    echo "$SHELL_LOG_PREFIX download bootstrap script success!"
+fi
+
+# Set the node type in the ubuntu install script
+STARTUP_SCRIPT_CONTENT=$(cat "${STARTUP_SCRIPT}")
+STARTUP_SCRIPT_CONTENT=${STARTUP_SCRIPT_CONTENT//"REPLACEWITHNODETYPE"/"$NODETYPE"}
+
 
 # TODO 
 NODE_SKU=e2-standard-4 # 4 core, 16gb ram 
@@ -274,7 +301,7 @@ ${GCLOUD_COMMAND} compute instances create ${GC_COMPUTE_ENGINE} \
        --image-project ubuntu-os-cloud \
        --image-family ubuntu-2004-lts \
        --zone ${GC_ZONE} \
-       --metadata=startup-script-url=${STARTUP_SCRIPT} \
+       --metadata=startup-script=${STARTUP_SCRIPT_CONTENT} \
        --project ${GC_PROJECT_NAME}
        
 if [ $? != 0 ]; then 
