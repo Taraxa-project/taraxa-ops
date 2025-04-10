@@ -5,7 +5,7 @@ autopep8==1.5.7
 certifi==2024.7.4
 chardet==4.0.0
 charset-normalizer==2.0.4
-idna==3.2
+idna==3.7
 multidict==5.1.0
 pycodestyle==2.7.0
 requests==2.26.0
