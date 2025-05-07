@@ -12,7 +12,7 @@ eth-rlp==0.2.1
 eth-typing==2.2.2
 eth-utils==1.10.0
 hexbytes==0.2.1
-idna==2.10
+idna==3.7
 jsonpickle==2.0.0
 parsimonious==0.8.1
 pycryptodome==3.10.1
