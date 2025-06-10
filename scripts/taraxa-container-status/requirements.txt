@@ -8,7 +8,7 @@ charset-normalizer==2.0.4
 idna==3.7
 multidict==5.1.0
 pycodestyle==2.7.0
-requests==2.26.0
+requests==2.32.4
 slackclient==2.9.3
 toml==0.10.2
 typing-extensions==3.10.0.0
