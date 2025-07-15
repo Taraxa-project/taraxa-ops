@@ -1,4 +1,4 @@
-aiohttp==3.11.0b0
+aiohttp==3.12.14
 async-timeout==3.0.1
 attrs==21.2.0
 autopep8==1.5.7
