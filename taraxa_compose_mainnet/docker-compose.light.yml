@@ -1,5 +1,13 @@
-version: "3"
 services:
+  snapshot-puller:
+    image: alpine:latest
+    volumes:
+      - ./data:/opt/taraxa_data/data
+      - ./snapshot-init.sh:/snapshot-init.sh:ro
+    environment:
+      - NETWORK=mainnet
+      - NODE_TYPE=light
+    command: /bin/sh /snapshot-init.sh
   node:
     image: taraxa/taraxa-node:v1.13.2
     restart: always
@@ -14,15 +22,20 @@ services:
           taraxad --chain mainnet --wallet /opt/taraxa_data/conf/wallet.json --config /opt/taraxa_data/conf/mainnet.json --data-dir /opt/taraxa_data/data --overwrite-config --light --rpc.enable-test-rpc"
     volumes:
       - ./config:/opt/taraxa_data/conf
-      - data:/opt/taraxa_data/data
+      - ./data:/opt/taraxa_data/data
+    depends_on:
+      snapshot-puller:
+        condition: service_completed_successfully
   status-app:
     image: taraxa/taraxa-node-status:latest
     environment:
       - NEXT_PUBLIC_RPC=http://node:7777
     restart: always
     depends_on:
-      - node
+      snapshot-puller:
+        condition: service_completed_successfully
+      node:
+        condition: service_started
     ports:
       - "3000:3000"
-volumes:
-  data:
+
