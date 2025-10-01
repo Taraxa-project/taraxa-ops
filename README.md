@@ -22,6 +22,95 @@ cd taraxa_compose
 docker-compose up -d
 ```
 
+# Snapshot Management
+
+The Taraxa node automatically downloads the latest blockchain snapshot on first start to speed up synchronization. The snapshot-puller container handles this process before the node starts.
+
+## Default Behavior
+
+By default, the snapshot-puller will:
+- Check if the data directory already exists and has content
+- If data exists, skip snapshot download and use existing data
+- If data directory is empty, download the latest snapshot for your network and node type
+
+## Configuration Options
+
+You can customize the snapshot behavior using environment variables in your docker-compose.yml:
+
+### Network Selection
+```yaml
+environment:
+  - NETWORK=mainnet  # Options: mainnet (default) or testnet
+```
+
+### Node Type
+```yaml
+environment:
+  - NODE_TYPE=light  # Options: light (default) or full
+```
+
+### Custom Snapshot URL
+To use a specific snapshot instead of the latest:
+```yaml
+environment:
+  - SNAPSHOT_URL=https://storage.googleapis.com/taraxa-snapshot/mainnet-light-db-block-19951895-20250723-044758.tar.gz
+```
+
+### Force Fresh Snapshot Download
+If you have a corrupted database or want to start fresh, use the `DELETE_DATA` flag to remove existing data and download a new snapshot:
+```yaml
+environment:
+  - DELETE_DATA=true  # Options: true or false (default)
+```
+
+**Warning:** Setting `DELETE_DATA=true` will permanently delete all existing blockchain data in your data directory before downloading a fresh snapshot.
+
+## Light Node Performance Considerations
+
+When running a light node (with `--light` flag), the initial pruning can take a significant amount of time as it processes and prunes historical data. If you don't want to wait for the long initial sync, you can:
+
+1. Run your node **without** the `--light` flag (full node mode)
+2. Periodically use `DELETE_DATA=true` to remove old data and download a fresh snapshot
+
+This approach allows you to save disk space by regularly refreshing with the latest snapshot instead of maintaining full historical data, while avoiding the long sync times associated with light node initialization.
+
+## Example Configurations
+
+### Standard Light Node Configuration
+```yaml
+snapshot-puller:
+  image: alpine:latest
+  volumes:
+    - ./data:/opt/taraxa_data/data
+    - ./snapshot-init.sh:/snapshot-init.sh:ro
+  environment:
+    - NETWORK=mainnet
+    - NODE_TYPE=light
+    - DELETE_DATA=false
+  command: /bin/sh /snapshot-init.sh
+```
+
+### Periodic Snapshot Refresh (Alternative to Light Node)
+For users who want to save space without waiting for light node sync:
+```yaml
+snapshot-puller:
+  image: alpine:latest
+  volumes:
+    - ./data:/opt/taraxa_data/data
+    - ./snapshot-init.sh:/snapshot-init.sh:ro
+  environment:
+    - NETWORK=mainnet
+    - NODE_TYPE=full
+    - DELETE_DATA=true  # Set to true when you want to refresh with latest snapshot
+  command: /bin/sh /snapshot-init.sh
+
+node:
+  # Run without --light flag for faster startup
+  # Manually refresh snapshot periodically by setting DELETE_DATA=true and restarting
+```
+
+**Important:** After the snapshot is downloaded and your node is confirmed to be running successfully, it is **highly advisable to set `DELETE_DATA=false`**. Only switch it back to `true` when you intentionally want to force delete the data and download a fresh snapshot. Leaving `DELETE_DATA=true` permanently could result in unintended data loss on container restarts.
+
 # Running Taraxa-node at Digital Ocean
 You only need a Digital Ocean account to be able to run a Taraxa-node against the testnet.
 Follow this instructions to get a Digital Ocean account https://www.digitalocean.com/docs/getting-started/sign-up/
