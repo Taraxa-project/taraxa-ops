@@ -43,7 +43,10 @@ mkdir -p "$DATA_PATH"
 # Download and extract snapshot on the fly
 echo "Downloading and extracting snapshot..."
 cd "$DATA_PATH"
-wget -O - "$SNAPSHOT_URL" | pigz -d | tar -xf -
+if ! wget -O - "$SNAPSHOT_URL" | pigz -d | tar -xf -; then
+    echo "ERROR: Failed to download or extract the snapshot"
+    exit 1
+fi
 
 echo "Snapshot extraction completed successfully"
 
