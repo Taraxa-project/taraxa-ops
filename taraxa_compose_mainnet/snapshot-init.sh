@@ -4,11 +4,22 @@ set -e
 DATA_PATH="/opt/taraxa_data/data"
 NETWORK="${NETWORK:-mainnet}"
 NODE_TYPE="${NODE_TYPE:-light}"
+DELETE_DATA="${DELETE_DATA:-false}"
 
 echo "Snapshot init container starting..."
 echo "DB path: $DATA_PATH"
 echo "Network: $NETWORK"
 echo "Node type: $NODE_TYPE"
+echo "Delete data: $DELETE_DATA"
+
+# Handle DELETE_DATA flag
+if [ "$DELETE_DATA" = "true" ]; then
+    if [ -d "$DATA_PATH" ] && [ "$(ls -A $DATA_PATH 2>/dev/null)" ]; then
+        echo "DELETE_DATA flag is set. Removing existing database directory contents..."
+        rm -rf "${DATA_PATH:?}"/*
+        echo "Database directory contents removed successfully"
+    fi
+fi
 
 # Check if db directory exists and has content
 if [ -d "$DATA_PATH" ] && [ "$(ls -A $DATA_PATH 2>/dev/null)" ]; then
