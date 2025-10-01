@@ -38,7 +38,7 @@ fi
 echo "Database directory does not exist or is empty. Downloading snapshot from $SNAPSHOT_URL"
 
 # Create directory if it doesn't exist
-mkdir -p $DATA_PATH
+mkdir -p "$DATA_PATH"
 
 # Download and extract snapshot on the fly
 echo "Downloading and extracting snapshot..."
