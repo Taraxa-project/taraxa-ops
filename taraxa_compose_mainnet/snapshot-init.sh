@@ -42,7 +42,7 @@ mkdir -p "$DATA_PATH"
 
 # Download and extract snapshot on the fly
 echo "Downloading and extracting snapshot..."
-cd $DATA_PATH
+cd "$DATA_PATH"
 wget -O - "$SNAPSHOT_URL" | pigz -d | tar -xf -
 
 echo "Snapshot extraction completed successfully"
