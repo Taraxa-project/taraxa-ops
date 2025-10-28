@@ -9,7 +9,7 @@ services:
       - NODE_TYPE=light
     command: /bin/sh /snapshot-init.sh
   node:
-    image: taraxa/taraxa-node:v1.13.6
+    image: taraxa/taraxa-node:v1.14.0
     restart: always
     ports:
       - "10002:10002"
