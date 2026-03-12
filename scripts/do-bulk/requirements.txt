@@ -17,7 +17,7 @@ jsonpickle==2.0.0
 parsimonious==0.8.1
 pycryptodome==3.10.1
 python-digitalocean==1.16.0
-requests==2.25.1
+requests==2.32.4
 rlp==2.0.1
 six==1.16.0
 toolz==0.11.1
